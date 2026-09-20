@@ -50,7 +50,17 @@ private:
 
     void setDefaultInfo();
 
+    //Connectors
     void initMainButtons();
+    void initMenuButtons();
+
+    //Menu buttons
+    void onSaveAsTXT();
+    void onSaveAsJSON();
+    void onSaveAsLanguage();
+    void onOpenFile();
+    void onExit();
+    void onSearch();
 
 private slots:
     void themeChanged(int);

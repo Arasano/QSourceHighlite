@@ -42,14 +42,15 @@ MainWindow::MainWindow(QWidget *parent)
     initLangsComboBox();
     initThemesComboBox();
 
-    //set default font
+    //Set default font
     QFont f = QFontDatabase::systemFont(QFontDatabase::FixedFont);
     ui->plainTextEdit->setFont(f);
 
-    //init highlighter
+    //Init highlighter
     highlighter = new QSourceHighliter(ui->plainTextEdit->document());
 
     initMainButtons();
+    initMenuButtons();
 
     setDefaultInfo();
 }
@@ -67,16 +68,58 @@ void MainWindow::setDefaultInfo()
 
 void MainWindow::initMainButtons()
 {
-    //lang change button
+    //Lang change button
     connect(ui->langComboBox,
             static_cast<void (QComboBox::*) (const QString&)>(&QComboBox::currentTextChanged),
             this, &MainWindow::languageChanged);
-    //theme change button
+    //Theme change button
     connect(ui->themeComboBox,
             static_cast<void (QComboBox::*) (int)>(&QComboBox::currentIndexChanged),
             this, &MainWindow::themeChanged);
-    //print debug info
+    //Print debug info
     //connect(ui->plainTextEdit, &QPlainTextEdit::textChanged, this, &MainWindow::printDebug);
+}
+
+void MainWindow::initMenuButtons()
+{
+    //File section
+    //Save file
+    //as TXT
+    connect(ui->actionSaveAsTXT, &QAction::triggered, this, &MainWindow::onSaveAsTXT);
+    //as JSON
+    connect(ui->actionSaveAsJSON, &QAction::triggered, this, &MainWindow::onSaveAsJSON);
+    //as selected language
+    connect(ui->actionSaveAsLanguage, &QAction::triggered, this, &MainWindow::onSaveAsLanguage);
+
+    //Open file
+    connect(ui->actionOpenFile, &QAction::triggered, this, &MainWindow::onOpenFile);
+
+    //Exit
+    connect(ui->actionExit, &QAction::triggered, this, &MainWindow::onExit);
+
+    //Edit section
+    //Search
+    connect(ui->actionSearch, &QAction::triggered, this, &MainWindow::onSearch);
+}
+
+//Add info output
+void MainWindow::onSaveAsTXT(){
+    ui->statusBar->showMessage("onSaveAsTXT", 3000);
+}
+void MainWindow::onSaveAsJSON(){
+    ui->statusBar->showMessage("onSaveAsJSON", 3000);
+}
+void MainWindow::onSaveAsLanguage(){
+    ui->statusBar->showMessage("onSaveAsLanguage", 3000);
+}
+void MainWindow::onOpenFile(){
+    ui->statusBar->showMessage("onOpenFile", 3000);
+}
+void MainWindow::onExit(){
+    ui->statusBar->showMessage("onExit", 3000);
+}
+void MainWindow::onSearch(){
+    ui->statusBar->showMessage("onSearch", 3000);
 }
 
 void MainWindow::initLangsEnum()
@@ -145,19 +188,19 @@ void MainWindow::initLangsComboBox() {
 }
 
 void MainWindow::themeChanged(int) {
-    //change theme for specific lang
+    //Change theme for specific lang
     QSourceHighliter::Themes theme = (QSourceHighliter::Themes)ui->themeComboBox->currentData().toInt();
-    //update theme
+    //Update theme
     highlighter->setTheme(theme);
 }
 
 void MainWindow::languageChanged(const QString &lang) {
-    //change lang
+    //Change lang
     highlighter->setCurrentLanguage(_langStringToEnum.value(lang));
-    //update highlight in ui
+    //Update highlight in ui
     highlighter->rehighlight();
 
-    //open default example of new lang
+    //Open default example of new lang
     // QFile f(QDir::currentPath() + "/../test_files/" + lang + ".txt");
     // if (f.open(QIODevice::ReadOnly | QIODevice::Text)) {
     //     const auto text = f.readAll();

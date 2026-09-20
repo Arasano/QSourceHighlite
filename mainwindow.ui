@@ -68,18 +68,212 @@
     </item>
    </layout>
   </widget>
+  <widget class="QStatusBar" name="statusBar"/>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>23</height>
+     <height>21</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <widget class="QMenu" name="menuSave_as">
+     <property name="title">
+      <string>Save as...</string>
+     </property>
+     <addaction name="actionSaveAsTXT"/>
+     <addaction name="actionSaveAsJSON"/>
+     <addaction name="actionSaveAsLanguage"/>
+    </widget>
+    <addaction name="menuSave_as"/>
+    <addaction name="actionOpenFile"/>
+    <addaction name="actionExit"/>
+   </widget>
+   <widget class="QMenu" name="menuEdit">
+    <property name="title">
+     <string>Edit</string>
+    </property>
+    <addaction name="actionSearch"/>
+    <addaction name="separator"/>
+    <addaction name="actionUndo"/>
+    <addaction name="actionRedo"/>
+    <addaction name="separator"/>
+    <addaction name="actionCopy"/>
+    <addaction name="actionPaste"/>
+    <addaction name="actionCut"/>
+    <addaction name="actionClear"/>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menuEdit"/>
   </widget>
-  <widget class="QStatusBar" name="statusbar"/>
+  <action name="actionOpenFile">
+   <property name="text">
+    <string>Open file</string>
+   </property>
+  </action>
+  <action name="actionExit">
+   <property name="text">
+    <string>Exit</string>
+   </property>
+  </action>
+  <action name="actionCopy">
+   <property name="text">
+    <string>Copy</string>
+   </property>
+  </action>
+  <action name="actionPaste">
+   <property name="text">
+    <string>Paste</string>
+   </property>
+  </action>
+  <action name="actionCut">
+   <property name="text">
+    <string>Cut</string>
+   </property>
+  </action>
+  <action name="actionClear">
+   <property name="text">
+    <string>Clear</string>
+   </property>
+  </action>
+  <action name="action">
+   <property name="text">
+    <string> </string>
+   </property>
+  </action>
+  <action name="actionSaveAsTXT">
+   <property name="text">
+    <string>TXT</string>
+   </property>
+  </action>
+  <action name="actionSaveAsJSON">
+   <property name="text">
+    <string>JSON</string>
+   </property>
+  </action>
+  <action name="actionSaveAsLanguage">
+   <property name="text">
+    <string>Language</string>
+   </property>
+  </action>
+  <action name="actionSearch">
+   <property name="text">
+    <string>Search</string>
+   </property>
+  </action>
+  <action name="actionUndo">
+   <property name="text">
+    <string>Undo</string>
+   </property>
+  </action>
+  <action name="actionRedo">
+   <property name="text">
+    <string>Redo</string>
+   </property>
+  </action>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>actionCopy</sender>
+   <signal>triggered()</signal>
+   <receiver>plainTextEdit</receiver>
+   <slot>copy()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>450</x>
+     <y>299</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionPaste</sender>
+   <signal>triggered()</signal>
+   <receiver>plainTextEdit</receiver>
+   <slot>paste()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>450</x>
+     <y>299</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionCut</sender>
+   <signal>triggered()</signal>
+   <receiver>plainTextEdit</receiver>
+   <slot>cut()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>450</x>
+     <y>299</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionClear</sender>
+   <signal>triggered()</signal>
+   <receiver>plainTextEdit</receiver>
+   <slot>clear()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>450</x>
+     <y>299</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionUndo</sender>
+   <signal>triggered()</signal>
+   <receiver>plainTextEdit</receiver>
+   <slot>undo()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-826</x>
+     <y>35</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>450</x>
+     <y>299</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionRedo</sender>
+   <signal>triggered()</signal>
+   <receiver>plainTextEdit</receiver>
+   <slot>redo()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>207</x>
+     <y>43</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>450</x>
+     <y>299</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>
