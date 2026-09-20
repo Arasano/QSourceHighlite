@@ -42,26 +42,41 @@ MainWindow::MainWindow(QWidget *parent)
     initLangsComboBox();
     initThemesComboBox();
 
-    //set highlighter
+    //set default font
     QFont f = QFontDatabase::systemFont(QFontDatabase::FixedFont);
     ui->plainTextEdit->setFont(f);
+
+    //init highlighter
     highlighter = new QSourceHighliter(ui->plainTextEdit->document());
 
-    connect(ui->langComboBox,
-            static_cast<void (QComboBox::*) (const QString&)>(&QComboBox::currentTextChanged),
-            this, &MainWindow::languageChanged);
-    connect(ui->themeComboBox,
-            static_cast<void (QComboBox::*) (int)>(&QComboBox::currentIndexChanged),
-            this, &MainWindow::themeChanged);
+    initMainButtons();
 
-    ui->langComboBox->setCurrentText("Asm");
-    languageChanged("Asm");
-    //    connect(ui->plainTextEdit, &QPlainTextEdit::textChanged, this, &MainWindow::printDebug);
+    setDefaultInfo();
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::setDefaultInfo()
+{
+    ui->langComboBox->setCurrentText("Asm");
+    languageChanged("Asm");
+}
+
+void MainWindow::initMainButtons()
+{
+    //lang change button
+    connect(ui->langComboBox,
+            static_cast<void (QComboBox::*) (const QString&)>(&QComboBox::currentTextChanged),
+            this, &MainWindow::languageChanged);
+    //theme change button
+    connect(ui->themeComboBox,
+            static_cast<void (QComboBox::*) (int)>(&QComboBox::currentIndexChanged),
+            this, &MainWindow::themeChanged);
+    //print debug info
+    //connect(ui->plainTextEdit, &QPlainTextEdit::textChanged, this, &MainWindow::printDebug);
 }
 
 void MainWindow::initLangsEnum()
@@ -130,17 +145,23 @@ void MainWindow::initLangsComboBox() {
 }
 
 void MainWindow::themeChanged(int) {
+    //change theme for specific lang
     QSourceHighliter::Themes theme = (QSourceHighliter::Themes)ui->themeComboBox->currentData().toInt();
+    //update theme
     highlighter->setTheme(theme);
 }
 
 void MainWindow::languageChanged(const QString &lang) {
+    //change lang
     highlighter->setCurrentLanguage(_langStringToEnum.value(lang));
+    //update highlight in ui
+    highlighter->rehighlight();
 
-    QFile f(QDir::currentPath() + "/../test_files/" + lang + ".txt");
-    if (f.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        const auto text = f.readAll();
-        ui->plainTextEdit->setPlainText(QString::fromUtf8(text));
-    }
-    f.close();
+    //open default example of new lang
+    // QFile f(QDir::currentPath() + "/../test_files/" + lang + ".txt");
+    // if (f.open(QIODevice::ReadOnly | QIODevice::Text)) {
+    //     const auto text = f.readAll();
+    //     ui->plainTextEdit->setPlainText(QString::fromUtf8(text));
+    // }
+    // f.close();
 }

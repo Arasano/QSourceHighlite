@@ -44,10 +44,13 @@ private:
     QSourceHighlite::QSourceHighliter *highlighter;
     static QHash<QString, QSourceHighlite::QSourceHighliter::Language> _langStringToEnum;
 
-    /* FUNCTIONS */
     void initLangsEnum();
     void initLangsComboBox();
     void initThemesComboBox();
+
+    void setDefaultInfo();
+
+    void initMainButtons();
 
 private slots:
     void themeChanged(int);
