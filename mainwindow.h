@@ -8,8 +8,8 @@
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -28,43 +28,47 @@
 #include <qsourcehighliter.h>
 
 QT_BEGIN_NAMESPACE
-namespace Ui { class MainWindow; }
+namespace Ui {
+class MainWindow;
+}
 QT_END_NAMESPACE
 
-class MainWindow : public QMainWindow
-{
+class MainWindow : public QMainWindow {
     Q_OBJECT
 
-public:
-    MainWindow(QWidget *parent = nullptr);
+  public:
+    MainWindow(QWidget* parent = nullptr);
     ~MainWindow();
 
-private:
-    Ui::MainWindow *ui;
-    QSourceHighlite::QSourceHighliter *highlighter;
+  private:
+    Ui::MainWindow* ui;
+    QSourceHighlite::QSourceHighliter* highlighter;
     static QHash<QString, QSourceHighlite::QSourceHighliter::Language> _langStringToEnum;
 
     void initLangsEnum();
     void initLangsComboBox();
     void initThemesComboBox();
 
+    void setDefaultFont();
     void setDefaultInfo();
 
-    //Connectors
+    // Connectors
     void initMainButtons();
     void initMenuButtons();
 
-    //Menu buttons
+    // Menu buttons
     void onSaveAsTXT();
     void onSaveAsJSON();
-    void onSaveAsLanguage();
     void onOpenFile();
     void onExit();
     void onSearch();
 
-private slots:
-    void themeChanged(int);
-    void languageChanged(const QString &lang);
+    // additional funstions
+    int loadDataFromTXTFile(const QString& path);
+    int loadDataFromJSONFile(const QString& path);
 
+  private slots:
+    void themeChanged(int);
+    void languageChanged(const QString& lang);
 };
 #endif // MAINWINDOW_H

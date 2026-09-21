@@ -88,7 +88,6 @@
      </property>
      <addaction name="actionSaveAsTXT"/>
      <addaction name="actionSaveAsJSON"/>
-     <addaction name="actionSaveAsLanguage"/>
     </widget>
     <addaction name="menuSave_as"/>
     <addaction name="actionOpenFile"/>
