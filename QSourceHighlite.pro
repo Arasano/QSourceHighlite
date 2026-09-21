@@ -10,12 +10,15 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
     main.cpp \
     mainwindow.cpp \
+    searchdialog.cpp
 
 HEADERS += \
     mainwindow.h \
+    searchdialog.h
 
 FORMS += \
-    mainwindow.ui
+    mainwindow.ui \
+    searchdialog.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

@@ -26,6 +26,7 @@
 
 #include <QMainWindow>
 #include <qsourcehighliter.h>
+#include <searchdialog.h>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -45,20 +46,29 @@ class MainWindow : public QMainWindow {
 
   private:
     Ui::MainWindow* ui;
+
     QSourceHighlite::QSourceHighliter* highlighter;
     static QHash<QString, QSourceHighlite::QSourceHighliter::Language> _langStringToEnum;
+
+    SearchDialog* dialog;
+
     int isTextChanged = 0;
 
+    // Inits
     void initLangsEnum();
     void initLangsComboBox();
     void initThemesComboBox();
 
+    // Default info setters
     void setDefaultFont();
     void setDefaultInfo();
 
-    // Connectors
+    // Button connectors
     void initMainButtons();
     void initMenuButtons();
+
+    // Connectors
+    void initSearchDialogConnectors();
     void initEventConnectors();
 
     // Menu buttons
@@ -68,9 +78,15 @@ class MainWindow : public QMainWindow {
     void onExit();
     void onSearch();
 
-    // additional funstions
+    // Additional funstions
     bool showSaveMessage();
 
+    // Search dialog buttons
+    void onSearchDialogFindNext(const QString& text);
+    void onSearchDialogReplace(const QString& find, const QString& replace);
+    void onSearchDialogReplaceAll(const QString& find, const QString& replace);
+
+    // Working with file
     int loadDataFromTXTFile(const QString& path);
     int loadDataFromJSONFile(const QString& path);
 
