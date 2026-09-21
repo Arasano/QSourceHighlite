@@ -52,6 +52,8 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWi
     initMainButtons();
     initMenuButtons();
 
+    initToolBarButtons();
+
     initEventConnectors();
     initSearchDialogConnectors();
 
@@ -119,6 +121,37 @@ void MainWindow::initMenuButtons() {
     connect(ui->actionSearch, &QAction::triggered, this, &MainWindow::onSearch);
 
     connect(ui->plainTextEdit, &QPlainTextEdit::textChanged, this, [this]() { isTextChanged = 1; });
+}
+
+void MainWindow::initToolBarButtons() {
+
+    // Open file
+    QAction* actionOpenFileToolBar = new QAction(
+        QIcon::fromTheme("document-open", style()->standardIcon(QStyle::SP_DialogOpenButton)),
+        tr("Open"), this);
+    ui->toolBar->addAction(actionOpenFileToolBar);
+    connect(actionOpenFileToolBar, &QAction::triggered, this, &MainWindow::onOpenFile);
+
+    // Save file
+    // as TXT
+    QAction* actionSaveFileTXTToolBar = new QAction(
+        QIcon::fromTheme("document-save", style()->standardIcon(QStyle::SP_DialogOpenButton)),
+        tr("TXT"), this);
+    ui->toolBar->addAction(actionSaveFileTXTToolBar);
+    connect(actionSaveFileTXTToolBar, &QAction::triggered, this, &MainWindow::onSaveAsTXT);
+    // as JSON
+    QAction* actionSaveFileJSONToolBar = new QAction(
+        QIcon::fromTheme("document-save", style()->standardIcon(QStyle::SP_DialogOpenButton)),
+        tr("JSON"), this);
+    ui->toolBar->addAction(actionSaveFileJSONToolBar);
+    connect(actionSaveFileJSONToolBar, &QAction::triggered, this, &MainWindow::onSaveAsJSON);
+
+    // Search
+    QAction* actionSearchToolBar = new QAction(
+        QIcon::fromTheme("edit-find", style()->standardIcon(QStyle::SP_DialogOpenButton)),
+        tr("JSON"), this);
+    ui->toolBar->addAction(actionSearchToolBar);
+    connect(actionSearchToolBar, &QAction::triggered, this, &MainWindow::onSearch);
 }
 
 void MainWindow::initEventConnectors() {

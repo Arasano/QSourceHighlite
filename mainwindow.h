@@ -66,6 +66,7 @@ class MainWindow : public QMainWindow {
     // Button connectors
     void initMainButtons();
     void initMenuButtons();
+    void initToolBarButtons();
 
     // Connectors
     void initSearchDialogConnectors();
