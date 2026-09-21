@@ -40,10 +40,14 @@ class MainWindow : public QMainWindow {
     MainWindow(QWidget* parent = nullptr);
     ~MainWindow();
 
+  protected:
+    void closeEvent(QCloseEvent* event) override;
+
   private:
     Ui::MainWindow* ui;
     QSourceHighlite::QSourceHighliter* highlighter;
     static QHash<QString, QSourceHighlite::QSourceHighliter::Language> _langStringToEnum;
+    int isTextChanged = 0;
 
     void initLangsEnum();
     void initLangsComboBox();
@@ -55,15 +59,18 @@ class MainWindow : public QMainWindow {
     // Connectors
     void initMainButtons();
     void initMenuButtons();
+    void initEventConnectors();
 
     // Menu buttons
-    void onSaveAsTXT();
-    void onSaveAsJSON();
+    bool onSaveAsTXT();
+    bool onSaveAsJSON();
     void onOpenFile();
     void onExit();
     void onSearch();
 
     // additional funstions
+    bool showSaveMessage();
+
     int loadDataFromTXTFile(const QString& path);
     int loadDataFromJSONFile(const QString& path);
 

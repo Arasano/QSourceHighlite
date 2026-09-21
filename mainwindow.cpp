@@ -31,6 +31,8 @@
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QJsonObject>
+#include <QMessageBox>
+#include <QPushButton>
 
 using namespace QSourceHighlite;
 
@@ -44,14 +46,15 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWi
     initLangsComboBox();
     initThemesComboBox();
 
-    setDefaultFont();
-
     // Init highlighter
     highlighter = new QSourceHighliter(ui->plainTextEdit->document());
 
     initMainButtons();
     initMenuButtons();
 
+    initEventConnectors();
+
+    setDefaultFont();
     setDefaultInfo();
 }
 
@@ -100,41 +103,59 @@ void MainWindow::initMenuButtons() {
     // Edit section
     // Search
     connect(ui->actionSearch, &QAction::triggered, this, &MainWindow::onSearch);
+
+    connect(ui->plainTextEdit, &QPlainTextEdit::textChanged, this, [this]() { isTextChanged = 1; });
 }
 
-void MainWindow::onSaveAsTXT() {
+void MainWindow::initEventConnectors() {
+    // If text changed
+    connect(ui->plainTextEdit, &QPlainTextEdit::textChanged, this, [this]() { isTextChanged = 1; });
+}
+
+void MainWindow::closeEvent(QCloseEvent* event) {
+    // If exit button pressed
+    if (showSaveMessage()) {
+        event->accept();
+    } else {
+        event->ignore();
+    }
+    ui->statusBar->showMessage("onExit", 3000);
+}
+
+bool MainWindow::onSaveAsTXT() {
     QString fileName = QFileDialog::getSaveFileName(this, "Save TXT file", "", "TXT file (*.txt)");
 
     if (fileName.isEmpty()) {
         ui->statusBar->showMessage("Error: file name is empty", 3000);
-        return;
+        return false;
     };
 
     QFile file(fileName);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
         ui->statusBar->showMessage("Error: " + file.errorString(), 3000);
-        return;
+        return false;
     }
 
     file.write(ui->plainTextEdit->toPlainText().toUtf8());
     file.close();
 
     ui->statusBar->showMessage("Save file " + fileName + " successfully", 3000);
+    return true;
 }
 
-void MainWindow::onSaveAsJSON() {
+bool MainWindow::onSaveAsJSON() {
     QString fileName =
         QFileDialog::getSaveFileName(this, "Save JSON file", "", "JSON file (*.json)");
 
     if (fileName.isEmpty()) {
         ui->statusBar->showMessage("Error: file name is empty", 3000);
-        return;
+        return false;
     };
 
     QFile file(fileName);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
         ui->statusBar->showMessage("Error: " + file.errorString(), 3000);
-        return;
+        return false;
     }
 
     QJsonObject root;
@@ -146,7 +167,9 @@ void MainWindow::onSaveAsJSON() {
     file.close();
 
     ui->statusBar->showMessage("Save file " + fileName + " successfully", 3000);
+    return true;
 }
+
 void MainWindow::onOpenFile() {
     // Take URL to get suffix
     QUrl url = QFileDialog::getOpenFileUrl(this, "Open file", QUrl(), "Code files (*.json *.txt)");
@@ -187,6 +210,8 @@ void MainWindow::onOpenFile() {
         return;
     }
 
+    isTextChanged = 0;
+
     ui->statusBar->showMessage("Open file " + fileInfo.filePath() + " successfully", 3000);
 }
 
@@ -213,6 +238,7 @@ int MainWindow::loadDataFromTXTFile(const QString& path) {
     ui->plainTextEdit->setPlainText(text);
     return 0;
 }
+
 int MainWindow::loadDataFromJSONFile(const QString& path) {
     QFile file(path);
 
@@ -258,9 +284,50 @@ int MainWindow::loadDataFromJSONFile(const QString& path) {
     ui->langComboBox->setCurrentText(lang);
     return 0;
 }
+
 void MainWindow::onExit() {
+    if (showSaveMessage()) {
+        QApplication::quit();
+    }
     ui->statusBar->showMessage("onExit", 3000);
 }
+
+bool MainWindow::showSaveMessage() {
+    if (isTextChanged) {
+        QMessageBox msgBox(this);
+        msgBox.setWindowTitle("Unsaved Changes");
+        msgBox.setText("The document has been modified.");
+        msgBox.setInformativeText("Do you want to save your changes?");
+        msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+        msgBox.setDefaultButton(QMessageBox::Save);
+        int ret = msgBox.exec();
+
+        switch (ret) {
+            case QMessageBox::Save:
+                // Open save layout and exit
+                if (onSaveAsJSON()) {
+                    // Just after proper save close app
+                    return true;
+                }
+                break;
+            case QMessageBox::Discard:
+                // Just exit
+                return true;
+                break;
+            case QMessageBox::Cancel:
+                // Close QMessageBox
+                return false;
+                break;
+            default:
+                // Should never be reached
+                return false;
+                break;
+        }
+    }
+    // Exit app
+    return true;
+}
+
 void MainWindow::onSearch() {
     ui->statusBar->showMessage("onSearch", 3000);
 }
