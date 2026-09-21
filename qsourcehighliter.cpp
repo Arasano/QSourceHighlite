@@ -8,8 +8,8 @@
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -22,26 +22,22 @@
  */
 
 #include "qsourcehighliter.h"
+
 #include "languagedata.h"
 #include "qsourcehighliterthemes.h"
 
 #include <QDebug>
-#include <algorithm>
 #include <QTextDocument>
+#include <algorithm>
 
 namespace QSourceHighlite {
 
-QSourceHighliter::QSourceHighliter(QTextDocument *doc)
-    : QSyntaxHighlighter(doc),
-      _language(CodeC)
-{
+QSourceHighliter::QSourceHighliter(QTextDocument* doc) : QSyntaxHighlighter(doc), _language(CodeC) {
     initFormats();
 }
 
-QSourceHighliter::QSourceHighliter(QTextDocument *doc, QSourceHighliter::Themes theme)
-    : QSyntaxHighlighter(doc),
-      _language(CodeC)
-{
+QSourceHighliter::QSourceHighliter(QTextDocument* doc, QSourceHighliter::Themes theme)
+    : QSyntaxHighlighter(doc), _language(CodeC) {
     setTheme(theme);
 }
 
@@ -92,20 +88,17 @@ QSourceHighliter::Language QSourceHighliter::currentLanguage() {
     return _language;
 }
 
-void QSourceHighliter::setTheme(QSourceHighliter::Themes theme)
-{
+void QSourceHighliter::setTheme(QSourceHighliter::Themes theme) {
     _formats = QSourceHighliterTheme::theme(theme);
     rehighlight();
 }
 
-void QSourceHighliter::highlightBlock(const QString &text)
-{
+void QSourceHighliter::highlightBlock(const QString& text) {
     if (currentBlock() == document()->firstBlock()) {
         setCurrentBlockState(_language);
     } else {
-        previousBlockState() == _language ?
-                    setCurrentBlockState(_language) :
-                    setCurrentBlockState(_language + 1);
+        previousBlockState() == _language ? setCurrentBlockState(_language)
+                                          : setCurrentBlockState(_language + 1);
     }
 
     highlightSyntax(text);
@@ -115,9 +108,9 @@ void QSourceHighliter::highlightBlock(const QString &text)
  * @brief Does the code syntax highlighting
  * @param text
  */
-void QSourceHighliter::highlightSyntax(const QString &text)
-{
-    if (text.isEmpty()) return;
+void QSourceHighliter::highlightSyntax(const QString& text) {
+    if (text.isEmpty())
+        return;
 
     const auto textLen = text.length();
 
@@ -128,77 +121,73 @@ void QSourceHighliter::highlightSyntax(const QString &text)
     bool isAsm = false;
     bool isSQL = false;
 
-    LanguageData keywords{},
-                others{},
-                types{},
-                builtin{},
-                literals{};
+    LanguageData keywords{}, others{}, types{}, builtin{}, literals{};
 
     switch (currentBlockState()) {
-        case CodeLua :
-        case CodeLuaComment :
+        case CodeLua:
+        case CodeLuaComment:
             loadLuaData(types, keywords, builtin, literals, others);
             break;
-        case CodeCpp :
-        case CodeCppComment :
+        case CodeCpp:
+        case CodeCppComment:
             loadCppData(types, keywords, builtin, literals, others);
             break;
-        case CodeJs :
-        case CodeJsComment :
+        case CodeJs:
+        case CodeJsComment:
             loadJSData(types, keywords, builtin, literals, others);
             break;
-        case CodeC :
-        case CodeCComment :
+        case CodeC:
+        case CodeCComment:
             loadCppData(types, keywords, builtin, literals, others);
             break;
-        case CodeBash :
+        case CodeBash:
             loadShellData(types, keywords, builtin, literals, others);
             comment = QLatin1Char('#');
             break;
-        case CodePHP :
-        case CodePHPComment :
+        case CodePHP:
+        case CodePHPComment:
             loadPHPData(types, keywords, builtin, literals, others);
             break;
-        case CodeQML :
-        case CodeQMLComment :
+        case CodeQML:
+        case CodeQMLComment:
             loadQMLData(types, keywords, builtin, literals, others);
             break;
-        case CodePython :
+        case CodePython:
             loadPythonData(types, keywords, builtin, literals, others);
             comment = QLatin1Char('#');
             break;
-        case CodeRust :
-        case CodeRustComment :
+        case CodeRust:
+        case CodeRustComment:
             loadRustData(types, keywords, builtin, literals, others);
             break;
-        case CodeJava :
-        case CodeJavaComment :
+        case CodeJava:
+        case CodeJavaComment:
             loadJavaData(types, keywords, builtin, literals, others);
             break;
-        case CodeCSharp :
-        case CodeCSharpComment :
+        case CodeCSharp:
+        case CodeCSharpComment:
             loadCSharpData(types, keywords, builtin, literals, others);
             break;
-        case CodeGo :
-        case CodeGoComment :
+        case CodeGo:
+        case CodeGoComment:
             loadGoData(types, keywords, builtin, literals, others);
             break;
-        case CodeV :
-        case CodeVComment :
+        case CodeV:
+        case CodeVComment:
             loadVData(types, keywords, builtin, literals, others);
             break;
-        case CodeSQL :
+        case CodeSQL:
             isSQL = true;
             loadSQLData(types, keywords, builtin, literals, others);
             break;
-        case CodeJSON :
+        case CodeJSON:
             loadJSONData(types, keywords, builtin, literals, others);
             break;
-        case CodeXML :
+        case CodeXML:
             xmlHighlighter(text);
             return;
-        case CodeCSS :
-        case CodeCSSComment :
+        case CodeCSS:
+        case CodeCSSComment:
             isCSS = true;
             loadCSSData(types, keywords, builtin, literals, others);
             break;
@@ -232,8 +221,8 @@ void QSourceHighliter::highlightSyntax(const QString &text)
             loadAsmData(types, keywords, builtin, literals, others);
             comment = QLatin1Char('#');
             break;
-        case CodeRhai :
-        case CodeRhaiComment :
+        case CodeRhai:
+        case CodeRhaiComment:
             loadRhaiData(types, keywords, builtin, literals, others);
             break;
         default:
@@ -246,14 +235,12 @@ void QSourceHighliter::highlightSyntax(const QString &text)
     // applying it to the whole block in the beginning
     setFormat(0, textLen, _formats[CodeBlock]);
 
-    auto applyCodeFormat =
-        [this](int i, const LanguageData &data,
-               const QString &text, const QTextCharFormat &fmt) -> int {
+    auto applyCodeFormat = [this](int i, const LanguageData& data, const QString& text,
+                                  const QTextCharFormat& fmt) -> int {
         // check if we are at the beginning OR if this is the start of a word
-        if (i == 0 || (!text.at(i - 1).isLetterOrNumber() &&
-                       text.at(i-1) != QLatin1Char('_'))) {
+        if (i == 0 || (!text.at(i - 1).isLetterOrNumber() && text.at(i - 1) != QLatin1Char('_'))) {
             const auto wordList = data.values(text.at(i).toLatin1());
-            for (const QLatin1String &word : wordList) {
+            for (const QLatin1String& word : wordList) {
                 // we have a word match check
                 // 1. if we are at the end
                 // 2. if we have a complete word
@@ -269,61 +256,66 @@ void QSourceHighliter::highlightSyntax(const QString &text)
         return i;
     };
 
-    const QTextCharFormat &formatType = _formats[CodeType];
-    const QTextCharFormat &formatKeyword = _formats[CodeKeyWord];
-    const QTextCharFormat &formatComment = _formats[CodeComment];
-    const QTextCharFormat &formatNumLit = _formats[CodeNumLiteral];
-    const QTextCharFormat &formatBuiltIn = _formats[CodeBuiltIn];
-    const QTextCharFormat &formatOther = _formats[CodeOther];
+    const QTextCharFormat& formatType = _formats[CodeType];
+    const QTextCharFormat& formatKeyword = _formats[CodeKeyWord];
+    const QTextCharFormat& formatComment = _formats[CodeComment];
+    const QTextCharFormat& formatNumLit = _formats[CodeNumLiteral];
+    const QTextCharFormat& formatBuiltIn = _formats[CodeBuiltIn];
+    const QTextCharFormat& formatOther = _formats[CodeOther];
 
     for (int i = 0; i < textLen; ++i) {
 
-        if (currentBlockState() % 2 != 0) goto Comment;
+        if (currentBlockState() % 2 != 0)
+            goto Comment;
 
         while (i < textLen && !text[i].isLetter()) {
             if (text[i].isSpace()) {
                 ++i;
-                //make sure we don't cross the bound
-                if (i == textLen) return;
-                if (text[i].isLetter()) break;
-                else continue;
+                // make sure we don't cross the bound
+                if (i == textLen)
+                    return;
+                if (text[i].isLetter())
+                    break;
+                else
+                    continue;
             }
-            //inline comment
+            // inline comment
             if (comment.isNull() && text[i] == QLatin1Char('/')) {
-                if((i+1) < textLen){
-                    if(text[i+1] == QLatin1Char('/')) {
+                if ((i + 1) < textLen) {
+                    if (text[i + 1] == QLatin1Char('/')) {
                         setFormat(i, textLen, formatComment);
                         return;
-                    } else if(text[i+1] == QLatin1Char('*')) {
-                        Comment:
-                        //find a comment end after current position.
-                        int next = text.indexOf(QLatin1String("*/"),i);
+                    } else if (text[i + 1] == QLatin1Char('*')) {
+                    Comment:
+                        // find a comment end after current position.
+                        int next = text.indexOf(QLatin1String("*/"), i);
                         if (next == -1) {
-                            //we didn't find a comment end.
-                            //Check if we are already in a comment block
+                            // we didn't find a comment end.
+                            // Check if we are already in a comment block
                             if (currentBlockState() % 2 == 0)
                                 setCurrentBlockState(currentBlockState() + 1);
-                            setFormat(i, textLen,  formatComment);
+                            setFormat(i, textLen, formatComment);
                             return;
                         } else {
-                            //we found a comment end
-                            //mark this block as code if it was previously comment
-                            //first check if the comment ended on the same line
-                            //if modulo 2 is not equal to zero, it means we are in a comment
+                            // we found a comment end
+                            // mark this block as code if it was previously comment
+                            // first check if the comment ended on the same line
+                            // if modulo 2 is not equal to zero, it means we are in a comment
                             //-1 will set this block's state as language
                             if (currentBlockState() % 2 != 0) {
                                 setCurrentBlockState(currentBlockState() - 1);
                             }
                             next += 2;
-                            setFormat(i, next - i,  formatComment);
+                            setFormat(i, next - i, formatComment);
                             i = next;
-                            if (i >= textLen) return;
+                            if (i >= textLen)
+                                return;
                         }
                     }
                 }
             } else if (isSQL && comment.isNull() && text[i] == QLatin1Char('-')) {
-                if((i+1) < textLen){
-                    if(text[i+1] == QLatin1Char('-')) {
+                if ((i + 1) < textLen) {
+                    if (text[i + 1] == QLatin1Char('-')) {
                         setFormat(i, textLen, formatComment);
                         return;
                     }
@@ -331,14 +323,14 @@ void QSourceHighliter::highlightSyntax(const QString &text)
             } else if (text[i] == comment) {
                 setFormat(i, textLen, formatComment);
                 i = textLen;
-            //integer literal
+                // integer literal
             } else if (text[i].isNumber()) {
-               i = highlightNumericLiterals(text, i);
-            //string literals
+                i = highlightNumericLiterals(text, i);
+                // string literals
             } else if (text[i] == QLatin1Char('\"')) {
-               i = highlightStringLiterals('\"', text, i);
-            }  else if (text[i] == QLatin1Char('\'')) {
-               i = highlightStringLiterals('\'', text, i);
+                i = highlightStringLiterals('\"', text, i);
+            } else if (text[i] == QLatin1Char('\'')) {
+                i = highlightStringLiterals('\'', text, i);
             }
             if (i >= textLen) {
                 break;
@@ -348,7 +340,8 @@ void QSourceHighliter::highlightSyntax(const QString &text)
 
         const int pos = i;
 
-        if (i == textLen || !text[i].isLetter()) continue;
+        if (i == textLen || !text[i].isLetter())
+            continue;
 
         /* Highlight Types */
         i = applyCodeFormat(i, types, text, formatType);
@@ -362,53 +355,59 @@ void QSourceHighliter::highlightSyntax(const QString &text)
          in the beginning of the loop to the word's first letter but I am not
          sure about its efficiency yet.
          ************************************************/
-        if (i == textLen || !text[i].isLetter()) continue;
+        if (i == textLen || !text[i].isLetter())
+            continue;
 
         /* Highlight Keywords */
         i = applyCodeFormat(i, keywords, text, formatKeyword);
-        if (i == textLen || !text[i].isLetter()) continue;
+        if (i == textLen || !text[i].isLetter())
+            continue;
 
         /* Highlight Literals (true/false/NULL,nullptr) */
         i = applyCodeFormat(i, literals, text, formatNumLit);
-        if (i == textLen || !text[i].isLetter()) continue;
+        if (i == textLen || !text[i].isLetter())
+            continue;
 
         /* Highlight Builtin library stuff */
         i = applyCodeFormat(i, builtin, text, formatBuiltIn);
-        if (i == textLen || !text[i].isLetter()) continue;
+        if (i == textLen || !text[i].isLetter())
+            continue;
 
         /* Highlight other stuff (preprocessor etc.) */
-        if (( i == 0 || !text.at(i-1).isLetter()) && others.contains(text[i].toLatin1())) {
+        if ((i == 0 || !text.at(i - 1).isLetter()) && others.contains(text[i].toLatin1())) {
             const QList<QLatin1String> wordList = others.values(text[i].toLatin1());
-            for(const QLatin1String &word : wordList) {
-                if (word == strMidRef(text, i, word.size()) // we have a word match
-                        &&
-                        (i + word.size() == text.length() // check if we are at the end
-                         ||
-                         !text.at(i + word.size()).isLetter()) //OR if we have a complete word
-                        ) {
-                    currentBlockState() == CodeCpp ?
-                                setFormat(i - 1, word.size() + 1, formatOther) :
-                                setFormat(i, word.size(), formatOther);
+            for (const QLatin1String& word : wordList) {
+                if (word == strMidRef(text, i, word.size())      // we have a word match
+                    && (i + word.size() == text.length()         // check if we are at the end
+                        || !text.at(i + word.size()).isLetter()) // OR if we have a complete word
+                ) {
+                    currentBlockState() == CodeCpp ? setFormat(i - 1, word.size() + 1, formatOther)
+                                                   : setFormat(i, word.size(), formatOther);
                     i += word.size();
                 }
             }
         }
 
-        //we were unable to find any match, lets skip this word
+        // we were unable to find any match, lets skip this word
         if (pos == i) {
             int count = i;
             while (count < textLen) {
-                if (!text[count].isLetter()) break;
+                if (!text[count].isLetter())
+                    break;
                 ++count;
             }
             i = count;
         }
     }
 
-    if (isCSS) cssHighlighter(text);
-    if (isYAML) ymlHighlighter(text);
-    if (isMake) makeHighlighter(text);
-    if (isAsm)  asmHighlighter(text);
+    if (isCSS)
+        cssHighlighter(text);
+    if (isYAML)
+        ymlHighlighter(text);
+    if (isMake)
+        makeHighlighter(text);
+    if (isAsm)
+        asmHighlighter(text);
 }
 
 /**
@@ -418,87 +417,85 @@ void QSourceHighliter::highlightSyntax(const QString &text)
  * @param i pos of i in loop
  * @return pos of i after the string
  */
-int QSourceHighliter::highlightStringLiterals(const QChar strType, const QString &text, int i) {
-    setFormat(i, 1,  _formats[CodeString]);
+int QSourceHighliter::highlightStringLiterals(const QChar strType, const QString& text, int i) {
+    setFormat(i, 1, _formats[CodeString]);
     ++i;
 
     while (i < text.length()) {
-        //look for string end
-        //make sure it's not an escape seq
-        if (text.at(i) == strType && text.at(i-1) != QLatin1Char('\\')) {
-            setFormat(i, 1,  _formats[CodeString]);
+        // look for string end
+        // make sure it's not an escape seq
+        if (text.at(i) == strType && text.at(i - 1) != QLatin1Char('\\')) {
+            setFormat(i, 1, _formats[CodeString]);
             ++i;
             break;
         }
-        //look for escape sequence
-        if (text.at(i) == QLatin1Char('\\') && (i+1) < text.length()) {
+        // look for escape sequence
+        if (text.at(i) == QLatin1Char('\\') && (i + 1) < text.length()) {
             int len = 0;
-            switch(text.at(i+1).toLatin1()) {
-            case 'a':
-            case 'b':
-            case 'e':
-            case 'f':
-            case 'n':
-            case 'r':
-            case 't':
-            case 'v':
-            case '\'':
-            case '"':
-            case '\\':
-            case '\?':
-                //2 because we have to highlight \ as well as the following char
-                len = 2;
-                break;
-            //octal esc sequence \123
-            case '0':
-            case '1':
-            case '2':
-            case '3':
-            case '4':
-            case '5':
-            case '6':
-            case '7':
-            {
-                if (i + 4 <= text.length()) {
-                    bool isCurrentOctal = true;
-                    if (!isOctal(text.at(i+2).toLatin1())) {
-                        isCurrentOctal = false;
-                        break;
+            switch (text.at(i + 1).toLatin1()) {
+                case 'a':
+                case 'b':
+                case 'e':
+                case 'f':
+                case 'n':
+                case 'r':
+                case 't':
+                case 'v':
+                case '\'':
+                case '"':
+                case '\\':
+                case '\?':
+                    // 2 because we have to highlight \ as well as the following char
+                    len = 2;
+                    break;
+                // octal esc sequence \123
+                case '0':
+                case '1':
+                case '2':
+                case '3':
+                case '4':
+                case '5':
+                case '6':
+                case '7': {
+                    if (i + 4 <= text.length()) {
+                        bool isCurrentOctal = true;
+                        if (!isOctal(text.at(i + 2).toLatin1())) {
+                            isCurrentOctal = false;
+                            break;
+                        }
+                        if (!isOctal(text.at(i + 3).toLatin1())) {
+                            isCurrentOctal = false;
+                            break;
+                        }
+                        len = isCurrentOctal ? 4 : 0;
                     }
-                    if (!isOctal(text.at(i+3).toLatin1())) {
-                        isCurrentOctal = false;
-                        break;
-                    }
-                    len = isCurrentOctal ? 4 : 0;
+                    break;
                 }
-                break;
-            }
-            //hex numbers \xFA
-            case 'x':
-            {
-                if (i + 3 <= text.length()) {
-                    bool isCurrentHex = true;
-                    if (!isHex(text.at(i+2).toLatin1())) {
-                        isCurrentHex = false;
-                        break;
+                // hex numbers \xFA
+                case 'x': {
+                    if (i + 3 <= text.length()) {
+                        bool isCurrentHex = true;
+                        if (!isHex(text.at(i + 2).toLatin1())) {
+                            isCurrentHex = false;
+                            break;
+                        }
+                        if (!isHex(text.at(i + 3).toLatin1())) {
+                            isCurrentHex = false;
+                            break;
+                        }
+                        len = isCurrentHex ? 4 : 0;
                     }
-                    if (!isHex(text.at(i+3).toLatin1())) {
-                        isCurrentHex = false;
-                        break;
-                    }
-                    len = isCurrentHex ? 4 : 0;
+                    break;
                 }
-                break;
-            }
-            //TODO: implement unicode code point escaping
-            default:
-                break;
+                // TODO: implement unicode code point escaping
+                default:
+                    break;
             }
 
-            //if len is zero, that means this wasn't an esc seq
-            //increment i so that we skip this backslash
+            // if len is zero, that means this wasn't an esc seq
+            // increment i so that we skip this backslash
             if (len == 0) {
-                setFormat(i, 1,  _formats[CodeString]);
+                setFormat(i, 1, _formats[CodeString]);
                 ++i;
                 continue;
             }
@@ -507,7 +504,7 @@ int QSourceHighliter::highlightStringLiterals(const QChar strType, const QString
             i += len;
             continue;
         }
-        setFormat(i, 1,  _formats[CodeString]);
+        setFormat(i, 1, _formats[CodeString]);
         ++i;
     }
     return i;
@@ -519,118 +516,119 @@ int QSourceHighliter::highlightStringLiterals(const QChar strType, const QString
  * @param i pos of i in loop
  * @return pos of i after the number
  */
-int QSourceHighliter::highlightNumericLiterals(const QString &text, int i)
-{
+int QSourceHighliter::highlightNumericLiterals(const QString& text, int i) {
     bool isPreAllowed = false;
-    if (i == 0) isPreAllowed = true;
+    if (i == 0)
+        isPreAllowed = true;
     else {
-        //these values are allowed before a number
-        switch(text.at(i - 1).toLatin1()) {
-        //css number
-        case ':':
-            if (currentBlockState() == CodeCSS)
+        // these values are allowed before a number
+        switch (text.at(i - 1).toLatin1()) {
+            // css number
+            case ':':
+                if (currentBlockState() == CodeCSS)
+                    isPreAllowed = true;
+                break;
+            case '$':
+                if (currentBlockState() == CodeAsm)
+                    isPreAllowed = true;
+                break;
+            case '[':
+            case '(':
+            case '{':
+            case ' ':
+            case ',':
+            case '=':
+            case '+':
+            case '-':
+            case '*':
+            case '/':
+            case '%':
+            case '<':
+            case '>':
                 isPreAllowed = true;
-            break;
-        case '$':
-            if (currentBlockState() == CodeAsm)
-                isPreAllowed = true;
-            break;
-        case '[':
-        case '(':
-        case '{':
-        case ' ':
-        case ',':
-        case '=':
-        case '+':
-        case '-':
-        case '*':
-        case '/':
-        case '%':
-        case '<':
-        case '>':
-            isPreAllowed = true;
-            break;
+                break;
         }
     }
 
-    if (!isPreAllowed) return i;
+    if (!isPreAllowed)
+        return i;
 
     const int start = i;
 
-    if ((i+1) >= text.length()) {
+    if ((i + 1) >= text.length()) {
         setFormat(i, 1, _formats[CodeNumLiteral]);
         return ++i;
     }
 
     ++i;
-    //hex numbers highlighting (only if there's a preceding zero)
+    // hex numbers highlighting (only if there's a preceding zero)
     if (text.at(i) == QChar('x') && text.at(i - 1) == QChar('0'))
         ++i;
 
     while (i < text.length()) {
         if (!text.at(i).isNumber() && text.at(i) != QChar('.') &&
-             text.at(i) != QChar('e')) //exponent
+            text.at(i) != QChar('e')) // exponent
             break;
         ++i;
     }
 
     bool isPostAllowed = false;
     if (i == text.length()) {
-        //cant have e at the end
+        // cant have e at the end
         if (text.at(i - 1) != QChar('e'))
             isPostAllowed = true;
     } else {
-        //these values are allowed after a number
-        switch(text.at(i).toLatin1()) {
-        case ']':
-        case ')':
-        case '}':
-        case ' ':
-        case ',':
-        case '=':
-        case '+':
-        case '-':
-        case '*':
-        case '/':
-        case '%':
-        case '>':
-        case '<':
-        case ';':
-            isPostAllowed = true;
-            break;
-        // for 100u, 1.0F
-        case 'p':
-            if (currentBlockState() == CodeCSS)
-                if (i + 1 < text.length() && text.at(i+1) == QChar('x')) {
-                    if (i + 2 == text.length() || !text.at(i+2).isLetterOrNumber())
-                    isPostAllowed = true;
-                }
-            break;
-        case 'e':
-            if (currentBlockState() == CodeCSS)
-                if (i + 1 < text.length() && text.at(i+1) == QChar('m')) {
-                    if (i + 2 == text.length() || !text.at(i+2).isLetterOrNumber())
-                    isPostAllowed = true;
-                }
-            break;
-        case 'u':
-        case 'l':
-        case 'f':
-        case 'U':
-        case 'L':
-        case 'F':
-            if (i + 1 == text.length() || !text.at(i+1).isLetterOrNumber()) {
+        // these values are allowed after a number
+        switch (text.at(i).toLatin1()) {
+            case ']':
+            case ')':
+            case '}':
+            case ' ':
+            case ',':
+            case '=':
+            case '+':
+            case '-':
+            case '*':
+            case '/':
+            case '%':
+            case '>':
+            case '<':
+            case ';':
                 isPostAllowed = true;
-                ++i;
-            }
-            break;
+                break;
+            // for 100u, 1.0F
+            case 'p':
+                if (currentBlockState() == CodeCSS)
+                    if (i + 1 < text.length() && text.at(i + 1) == QChar('x')) {
+                        if (i + 2 == text.length() || !text.at(i + 2).isLetterOrNumber())
+                            isPostAllowed = true;
+                    }
+                break;
+            case 'e':
+                if (currentBlockState() == CodeCSS)
+                    if (i + 1 < text.length() && text.at(i + 1) == QChar('m')) {
+                        if (i + 2 == text.length() || !text.at(i + 2).isLetterOrNumber())
+                            isPostAllowed = true;
+                    }
+                break;
+            case 'u':
+            case 'l':
+            case 'f':
+            case 'U':
+            case 'L':
+            case 'F':
+                if (i + 1 == text.length() || !text.at(i + 1).isLetterOrNumber()) {
+                    isPostAllowed = true;
+                    ++i;
+                }
+                break;
         }
     }
     if (isPostAllowed) {
         int end = i;
         setFormat(start, end - start, _formats[CodeNumLiteral]);
     }
-    //decrement so that the index is at the last number, not after it
+    // decrement so that the index is at the last number, not after it
     return --i;
 }
 
@@ -651,52 +649,59 @@ int QSourceHighliter::highlightNumericLiterals(const QString &text, int i)
  * If an h letter is found, check the next 4/5 letters for http/https and
  * highlight them as a link (underlined)
  */
-void QSourceHighliter::ymlHighlighter(const QString &text) {
-    if (text.isEmpty()) return;
+void QSourceHighliter::ymlHighlighter(const QString& text) {
+    if (text.isEmpty())
+        return;
     const auto textLen = text.length();
     bool colonNotFound = false;
 
-    //if this is a comment don't do anything and just return
+    // if this is a comment don't do anything and just return
     if (text.trimmed().at(0) == QLatin1Char('#'))
         return;
 
     for (int i = 0; i < textLen; ++i) {
-        if (!text.at(i).isLetter()) continue;
+        if (!text.at(i).isLetter())
+            continue;
 
-        if (colonNotFound && text.at(i) != QLatin1Char('h')) continue;
+        if (colonNotFound && text.at(i) != QLatin1Char('h'))
+            continue;
 
-        //we found a string literal, skip it
-        if (i != 0 && (text.at(i-1) == QLatin1Char('"') || text.at(i-1) == QLatin1Char('\''))) {
-            const int next = text.indexOf(text.at(i-1), i);
-            if (next == -1) break;
+        // we found a string literal, skip it
+        if (i != 0 && (text.at(i - 1) == QLatin1Char('"') || text.at(i - 1) == QLatin1Char('\''))) {
+            const int next = text.indexOf(text.at(i - 1), i);
+            if (next == -1)
+                break;
             i = next;
             continue;
         }
 
         const int colon = text.indexOf(QLatin1Char(':'), i);
 
-        //if colon isn't found, we set this true
-        if (colon == -1) colonNotFound = true;
+        // if colon isn't found, we set this true
+        if (colon == -1)
+            colonNotFound = true;
 
         if (!colonNotFound) {
-            //if the line ends here, format and return
-            if (colon+1 == textLen) {
+            // if the line ends here, format and return
+            if (colon + 1 == textLen) {
                 setFormat(i, colon - i, _formats[CodeKeyWord]);
                 return;
             } else {
-                //colon is found, check if it isn't some path or something else
-                if (!(text.at(colon+1) == QLatin1Char('\\') && text.at(colon+1) == QLatin1Char('/'))) {
+                // colon is found, check if it isn't some path or something else
+                if (!(text.at(colon + 1) == QLatin1Char('\\') &&
+                      text.at(colon + 1) == QLatin1Char('/'))) {
                     setFormat(i, colon - i, _formats[CodeKeyWord]);
                 }
             }
         }
 
-        //underlined links
+        // underlined links
         if (text.at(i) == QLatin1Char('h')) {
             if (strMidRef(text, i, 5) == QLatin1String("https") ||
-                    strMidRef(text, i, 4) == QLatin1String("http")) {
+                strMidRef(text, i, 4) == QLatin1String("http")) {
                 int space = text.indexOf(QChar(' '), i);
-                if (space == -1) space = textLen;
+                if (space == -1)
+                    space = textLen;
                 QTextCharFormat f = _formats[CodeString];
                 f.setUnderlineStyle(QTextCharFormat::SingleUnderline);
                 setFormat(i, space - i, f);
@@ -706,14 +711,16 @@ void QSourceHighliter::ymlHighlighter(const QString &text) {
     }
 }
 
-void QSourceHighliter::cssHighlighter(const QString &text)
-{
-    if (text.isEmpty()) return;
+void QSourceHighliter::cssHighlighter(const QString& text) {
+    if (text.isEmpty())
+        return;
     const auto textLen = text.length();
-    for (int i = 0; i<textLen; ++i) {
+    for (int i = 0; i < textLen; ++i) {
         if (text[i] == QLatin1Char('.') || text[i] == QLatin1Char('#')) {
-            if (i+1 >= textLen) return;
-            if (text[i + 1].isSpace() || text[i+1].isNumber()) continue;
+            if (i + 1 >= textLen)
+                return;
+            if (text[i + 1].isSpace() || text[i + 1].isNumber())
+                continue;
             int space = text.indexOf(QLatin1Char(' '), i);
             if (space < 0) {
                 space = text.indexOf('{');
@@ -727,27 +734,30 @@ void QSourceHighliter::cssHighlighter(const QString &text)
             if (strMidRef(text, i, 5) == QLatin1String("color")) {
                 i += 5;
                 int colon = text.indexOf(QLatin1Char(':'), i);
-                if (colon < 0) continue;
+                if (colon < 0)
+                    continue;
                 i = colon;
                 i++;
-                while(i < textLen) {
-                    if (!text[i].isSpace()) break;
+                while (i < textLen) {
+                    if (!text[i].isSpace())
+                        break;
                     i++;
                 }
                 int semicolon = text.indexOf(QLatin1Char(';'));
-                if (semicolon < 0) semicolon = textLen;
-                const QString color = text.mid(i, semicolon-i);
+                if (semicolon < 0)
+                    semicolon = textLen;
+                const QString color = text.mid(i, semicolon - i);
                 QTextCharFormat f = _formats[CodeBlock];
                 QColor c(color);
                 if (color.startsWith(QLatin1String("rgb"))) {
                     int t = text.indexOf(QLatin1Char('('), i);
                     int rPos = text.indexOf(QLatin1Char(','), t);
-                    int gPos = text.indexOf(QLatin1Char(','), rPos+1);
+                    int gPos = text.indexOf(QLatin1Char(','), rPos + 1);
                     int bPos = text.indexOf(QLatin1Char(')'), gPos);
                     if (rPos > -1 && gPos > -1 && bPos > -1) {
-                        const auto r = strMidRef(text, t+1, rPos - (t+1));
-                        const auto g = strMidRef(text, rPos+1, gPos - (rPos + 1));
-                        const auto b = strMidRef(text, gPos+1, bPos - (gPos+1));
+                        const auto r = strMidRef(text, t + 1, rPos - (t + 1));
+                        const auto g = strMidRef(text, rPos + 1, gPos - (rPos + 1));
+                        const auto b = strMidRef(text, gPos + 1, bPos - (gPos + 1));
                         c.setRgb(r.toInt(), g.toInt(), b.toInt());
                     } else {
                         c = _formats[CodeBlock].background().color();
@@ -760,27 +770,26 @@ void QSourceHighliter::cssHighlighter(const QString &text)
 
                 int lightness{};
                 QColor foreground;
-                //really dark
+                // really dark
                 if (c.lightness() <= 20) {
                     foreground = Qt::white;
-                } else if (c.lightness() > 20 && c.lightness() <= 51){
+                } else if (c.lightness() > 20 && c.lightness() <= 51) {
                     foreground = QColor("#ccc");
-                } else if (c.lightness() > 51 && c.lightness() <= 78){
+                } else if (c.lightness() > 51 && c.lightness() <= 78) {
                     foreground = QColor("#bbb");
-                } else if (c.lightness() > 78 && c.lightness() <= 110){
+                } else if (c.lightness() > 78 && c.lightness() <= 110) {
                     foreground = QColor("#bbb");
                 } else if (c.lightness() > 127) {
                     lightness = c.lightness() + 100;
                     foreground = c.darker(lightness);
-                }
-                else {
+                } else {
                     lightness = c.lightness() + 100;
                     foreground = c.lighter(lightness);
                 }
 
                 f.setBackground(c);
                 f.setForeground(foreground);
-                setFormat(i, semicolon - i, QTextCharFormat()); //clear prev format
+                setFormat(i, semicolon - i, QTextCharFormat()); // clear prev format
                 setFormat(i, semicolon - i, f);
                 i = semicolon;
             }
@@ -788,27 +797,29 @@ void QSourceHighliter::cssHighlighter(const QString &text)
     }
 }
 
-
-void QSourceHighliter::xmlHighlighter(const QString &text) {
-    if (text.isEmpty()) return;
+void QSourceHighliter::xmlHighlighter(const QString& text) {
+    if (text.isEmpty())
+        return;
     const auto textLen = text.length();
 
     setFormat(0, textLen, _formats[CodeBlock]);
 
     for (int i = 0; i < textLen; ++i) {
-        if (text[i] == QLatin1Char('<') && text[i+1] != QLatin1Char('!')) {
+        if (text[i] == QLatin1Char('<') && text[i + 1] != QLatin1Char('!')) {
 
             const int found = text.indexOf(QLatin1Char('>'), i);
             if (found > 0) {
                 ++i;
-                if (text[i] == QLatin1Char('/')) ++i;
+                if (text[i] == QLatin1Char('/'))
+                    ++i;
                 setFormat(i, found - i, _formats[CodeKeyWord]);
             }
         }
 
         if (text[i] == QLatin1Char('=')) {
             int lastSpace = text.lastIndexOf(QLatin1Char(' '), i);
-            if (lastSpace == i-1) lastSpace = text.lastIndexOf(QLatin1Char(' '), i-2);
+            if (lastSpace == i - 1)
+                lastSpace = text.lastIndexOf(QLatin1Char(' '), i - 2);
             if (lastSpace > 0) {
                 setFormat(lastSpace, i - lastSpace, _formats[CodeBuiltIn]);
             }
@@ -818,17 +829,19 @@ void QSourceHighliter::xmlHighlighter(const QString &text) {
             const int pos = i;
             int cnt = 1;
             ++i;
-            //bound check
-            if ( (i+1) >= textLen) return;
+            // bound check
+            if ((i + 1) >= textLen)
+                return;
             while (i < textLen) {
                 if (text[i] == QLatin1Char('\"')) {
                     ++cnt;
                     ++i;
                     break;
                 }
-                ++i; ++cnt;
-                //bound check
-                if ( (i+1) >= textLen) {
+                ++i;
+                ++cnt;
+                // bound check
+                if ((i + 1) >= textLen) {
                     ++cnt;
                     break;
                 }
@@ -838,8 +851,7 @@ void QSourceHighliter::xmlHighlighter(const QString &text) {
     }
 }
 
-void QSourceHighliter::makeHighlighter(const QString &text)
-{
+void QSourceHighliter::makeHighlighter(const QString& text) {
     int colonPos = text.indexOf(QLatin1Char(':'));
     if (colonPos == -1)
         return;
@@ -850,18 +862,17 @@ void QSourceHighliter::makeHighlighter(const QString &text)
  * @brief highlight inline labels such as 'func()' in "call func()"
  * @param text
  */
-void QSourceHighliter::highlightInlineAsmLabels(const QString &text)
-{
+void QSourceHighliter::highlightInlineAsmLabels(const QString& text) {
 #define Q(s) QStringLiteral(s)
-    static const QString jumps[27] = {
-        //0 - 19
-        Q("jmp"), Q("je"), Q("jne"), Q("jz"), Q("jnz"), Q("ja"), Q("jb"), Q("jg"), Q("jge"), Q("jae"), Q("jl"), Q("jle"),
-        Q("jbe"), Q("jo"), Q("jno"), Q("js"), Q("jns"), Q("jcxz"), Q("jecxz"), Q("jrcxz"),
-        //20 - 24
-        Q("loop"), Q("loope"), Q("loopne"), Q("loopz"), Q("loopnz"),
-        //25 - 26
-        Q("call"), Q("callq")
-    };
+    static const QString jumps[27] = {// 0 - 19
+                                      Q("jmp"), Q("je"), Q("jne"), Q("jz"), Q("jnz"), Q("ja"),
+                                      Q("jb"), Q("jg"), Q("jge"), Q("jae"), Q("jl"), Q("jle"),
+                                      Q("jbe"), Q("jo"), Q("jno"), Q("js"), Q("jns"), Q("jcxz"),
+                                      Q("jecxz"), Q("jrcxz"),
+                                      // 20 - 24
+                                      Q("loop"), Q("loope"), Q("loopne"), Q("loopz"), Q("loopnz"),
+                                      // 25 - 26
+                                      Q("call"), Q("callq")};
 #undef Q
 
     auto format = _formats[Token::CodeBuiltIn];
@@ -874,17 +885,21 @@ void QSourceHighliter::highlightInlineAsmLabels(const QString &text)
     if (!trimmed.isEmpty())
         c = trimmed.at(0).toLatin1();
     if (c == 'j') {
-        start = 0; end = 20;
+        start = 0;
+        end = 20;
     } else if (c == 'c') {
-        start = 25; end = 27;
+        start = 25;
+        end = 27;
     } else if (c == 'l') {
-        start = 20; end = 25;
+        start = 20;
+        end = 25;
     } else {
         return;
     }
 
-    auto skipSpaces = [&text](int& j){
-        while (text.at(j).isSpace()) j++;
+    auto skipSpaces = [&text](int& j) {
+        while (text.at(j).isSpace())
+            j++;
         return j;
     };
 
@@ -900,23 +915,22 @@ void QSourceHighliter::highlightInlineAsmLabels(const QString &text)
     }
 }
 
-void QSourceHighliter::asmHighlighter(const QString& text)
-{
+void QSourceHighliter::asmHighlighter(const QString& text) {
     highlightInlineAsmLabels(text);
-    //label highlighting
-    //examples:
-    //L1:
-    //LFB1:           # local func begin
+    // label highlighting
+    // examples:
+    // L1:
+    // LFB1:           # local func begin
     //
-    //following e.gs are not a label
-    //mov %eax, Count::count(%rip)
+    // following e.gs are not a label
+    // mov %eax, Count::count(%rip)
     //.string ": #%s"
 
-    //look for the last occurence of a colon
+    // look for the last occurence of a colon
     int colonPos = text.lastIndexOf(QLatin1Char(':'));
     if (colonPos == -1)
         return;
-    //check if this colon is in a comment maybe?
+    // check if this colon is in a comment maybe?
     bool isComment = text.lastIndexOf('#', colonPos) != -1;
     if (isComment) {
         int commentPos = text.lastIndexOf('#', colonPos);
@@ -942,4 +956,4 @@ void QSourceHighliter::asmHighlighter(const QString& text)
     if (!isLabel && i < text.length() && text.at(i) == QLatin1Char('#'))
         setFormat(0, colonPos, format);
 }
-}
+} // namespace QSourceHighlite

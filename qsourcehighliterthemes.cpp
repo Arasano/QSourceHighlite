@@ -8,8 +8,8 @@
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -25,8 +25,7 @@
 
 namespace QSourceHighlite {
 
-static QHash<QSourceHighliter::Token, QTextCharFormat> formats()
-{
+static QHash<QSourceHighliter::Token, QTextCharFormat> formats() {
     QHash<QSourceHighliter::Token, QTextCharFormat> _formats;
 
     QTextCharFormat defaultFormat = QTextCharFormat();
@@ -43,8 +42,7 @@ static QHash<QSourceHighliter::Token, QTextCharFormat> formats()
     return _formats;
 }
 
-static QHash<QSourceHighliter::Token, QTextCharFormat> monokai()
-{
+static QHash<QSourceHighliter::Token, QTextCharFormat> monokai() {
     QHash<QSourceHighliter::Token, QTextCharFormat> _formats = formats();
 
     _formats[QSourceHighliter::Token::CodeBlock].setForeground(QColor(227, 226, 214));
@@ -60,13 +58,13 @@ static QHash<QSourceHighliter::Token, QTextCharFormat> monokai()
 }
 
 QHash<QSourceHighliter::Token, QTextCharFormat>
-        QSourceHighliterTheme::theme(QSourceHighliter::Themes theme) {
+QSourceHighliterTheme::theme(QSourceHighliter::Themes theme) {
     switch (theme) {
-    case QSourceHighliter::Themes::Monokai:
-        return monokai();
-    default:
-        return {};
+        case QSourceHighliter::Themes::Monokai:
+            return monokai();
+        default:
+            return {};
     }
 }
 
-}
+} // namespace QSourceHighlite
