@@ -1,0 +1,104 @@
+# ==========================================
+# 1. GLOBAL RULES
+# ==========================================
+* text=auto eol=lf
+
+# ==========================================
+# 2. SOURCE CODE (C++ and Qt)
+# ==========================================
+# C++ sources with smart diff
+*.cpp      text diff=cpp
+*.cxx      text diff=cpp
+*.cc       text diff=cpp
+*.c        text diff=cpp
+*.h        text diff=cpp
+*.hpp      text diff=cpp
+*.hxx      text diff=cpp
+
+# Qt-specific text files
+*.ui       text
+*.qrc      text
+*.ts       text
+*.qml      text
+*.qss      text
+
+# ==========================================
+# 3. BUILD SYSTEMS (CMake, qmake, Qbs)
+# ==========================================
+# CMake
+CMakeLists.txt   text
+*.cmake          text
+
+# qmake and Qbs
+*.pro            text
+*.pri            text
+*.qbs            text
+
+# Makefiles
+Makefile         text
+*.mk             text
+
+# ==========================================
+# 4. CONFIGS, DOCS AND IDE
+# ==========================================
+*.json       text
+*.xml        text
+*.txt        text
+*.md         text
+*.yml        text
+*.yaml       text
+*.in         text
+
+# IDE settings and linters
+.clang-format    text
+.clang-tidy      text
+.editorconfig    text
+
+# ==========================================
+# 5. SCRIPTS
+# ==========================================
+# Linux/macOS/Cross-platform
+*.sh         text eol=lf
+*.py         text eol=lf
+
+# Windows
+*.bat        text eol=crlf
+*.cmd        text eol=crlf
+*.ps1        text eol=crlf
+
+# ==========================================
+# 6. BINARY FILES
+# ==========================================
+# Standard C++ artifacts
+*.exe        binary
+*.dll        binary
+*.so         binary
+*.dylib      binary
+*.o          binary
+*.obj        binary
+*.lib        binary
+*.a          binary
+*.pdb        binary
+*.idb        binary
+
+# Qt-specific binaries
+*.qm         binary
+
+# Images and resources
+*.png        binary
+*.jpg        binary
+*.jpeg       binary
+*.ico        binary
+*.svg        binary
+*.bmp        binary
+
+# ==========================================
+# 7. LANGUAGE STATISTICS (GitHub/GitLab)
+# ==========================================
+# Third-party libraries
+third_party/* linguist-vendored
+vendor/*      linguist-vendored
+
+# Generated code
+build/*       linguist-generated
+generated/*   linguist-generated
