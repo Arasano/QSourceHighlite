@@ -57,13 +57,67 @@ static QHash<QSourceHighliter::Token, QTextCharFormat> monokai() {
     return _formats;
 }
 
+/*
+Islands Dark
+Background: #191a1c - Deep, comfortable dark
+Foreground: #bcbec4 - Soft gray-white
+Keywords: #cf8e6d - Warm orange
+Strings: #6aab73 - Fresh green
+Numbers: #2aacb8 - Cyan
+Functions: #56a8f5 - Bright blue
+Comments: #7a7e85 - Muted gray
+*/
+static QHash<QSourceHighliter::Token, QTextCharFormat> darkTheme() {
+    QHash<QSourceHighliter::Token, QTextCharFormat> _formats = formats();
+
+    _formats[QSourceHighliter::Token::CodeBlock].setForeground(QColor(25,26,28));//#191a1c
+    _formats[QSourceHighliter::Token::CodeKeyWord].setForeground(QColor(207,142,109));//#cf8e6d
+    _formats[QSourceHighliter::Token::CodeString].setForeground(QColor(106,171,115));//#6aab73
+    _formats[QSourceHighliter::Token::CodeComment].setForeground(QColor(122,126,133));//#7a7e85
+    _formats[QSourceHighliter::Token::CodeType].setForeground(QColor(102, 217, 239));
+    _formats[QSourceHighliter::Token::CodeOther].setForeground(QColor(188,190,196));//#bcbec4
+    _formats[QSourceHighliter::Token::CodeNumLiteral].setForeground(QColor(42,172,184));//#2aacb8
+    _formats[QSourceHighliter::Token::CodeBuiltIn].setForeground(QColor(86,168,245));//#56a8f5
+
+    return _formats;
+}
+
+/*
+Islands Light
+Background: #ffffff - Pure white
+Foreground: #000000 - Rich black
+Keywords: #0033b3 - Deep blue
+Strings: #067d17 - Forest green
+Numbers: #1750eb - Vivid blue
+Functions: #00627a - Teal
+Comments: #8c8c8c - Medium gray
+*/
+static QHash<QSourceHighliter::Token, QTextCharFormat> lIghtTheme() {
+    QHash<QSourceHighliter::Token, QTextCharFormat> _formats = formats();
+
+    _formats[QSourceHighliter::Token::CodeBlock].setForeground(QColor(255, 255, 255));//#ffffff
+    _formats[QSourceHighliter::Token::CodeKeyWord].setForeground(QColor(0,51,179));//#0033b3
+    _formats[QSourceHighliter::Token::CodeString].setForeground(QColor(6,125,23));//#067d17
+    _formats[QSourceHighliter::Token::CodeComment].setForeground(QColor(140,140,140));//#8c8c8c
+    _formats[QSourceHighliter::Token::CodeType].setForeground(QColor(102, 217, 239));
+    _formats[QSourceHighliter::Token::CodeOther].setForeground(QColor(0, 0, 0));//#000000
+    _formats[QSourceHighliter::Token::CodeNumLiteral].setForeground(QColor(0,98,122));//#1750eb
+    _formats[QSourceHighliter::Token::CodeBuiltIn].setForeground(QColor(0,98,122));//#00627a
+
+    return _formats;
+}
+
 QHash<QSourceHighliter::Token, QTextCharFormat>
 QSourceHighliterTheme::theme(QSourceHighliter::Themes theme) {
     switch (theme) {
         case QSourceHighliter::Themes::Monokai:
             return monokai();
+        case QSourceHighliter::Themes::LightTheme:
+            return lIghtTheme();
+        case QSourceHighliter::Themes::DarkTheme:
+            return darkTheme();
         default:
-            return {};
+            return {monokai()};//monokai is default value
     }
 }
 

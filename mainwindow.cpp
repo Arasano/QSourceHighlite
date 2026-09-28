@@ -24,6 +24,7 @@
 #include "mainwindow.h"
 
 #include "qsourcehighliter.h"
+#include "qsourcehighliterthemes.h"
 #include "ui_mainwindow.h"
 
 #include <QDebug>
@@ -517,6 +518,8 @@ void MainWindow::initLangsEnum() {
 
 void MainWindow::initThemesComboBox() {
     ui->themeComboBox->addItem("Monokai", QSourceHighliter::Themes::Monokai);
+    ui->themeComboBox->addItem("Light theme", QSourceHighliter::Themes::LightTheme);
+    ui->themeComboBox->addItem("Dark theme", QSourceHighliter::Themes::DarkTheme);
 }
 
 void MainWindow::initLangsComboBox() {
@@ -553,6 +556,26 @@ void MainWindow::themeChanged(int) {
     // Update theme
     highlighter->setTheme(theme);
     highlighter->rehighlight();
+}
+
+void MainWindow::applyEditorBackground(QSourceHighlite::QSourceHighliter::Themes theme){
+    // Get format for current theme
+    auto themeFormats = QSourceHighliterTheme::theme(theme);
+
+    // Take block format - it contains all string background
+    QTextCharFormat blockFormat = themeFormats.value(QSourceHighliter::CodeBlock);
+
+    // Get background color, dafault white
+    QColor bgColor = blockFormat.background().color();
+    if(!bgColor.isValid()){
+        bgColor = Qt::white;
+    }
+
+    // Set backgtound style
+    QString styleSheet = QString("QPlainTExtEdit { background-color: %1; }").arg(bgColor.name());
+
+    // Set editor style
+    ui->plainTextEdit->setStyleSheet(styleSheet);
 }
 
 void MainWindow::languageChanged(const QString& lang) {

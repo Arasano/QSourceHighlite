@@ -34,7 +34,11 @@ namespace QSourceHighlite {
 
 class QSourceHighliter : public QSyntaxHighlighter {
   public:
-    enum Themes { Monokai = 1 };
+    enum Themes {
+        Monokai = 1,
+        DarkTheme = 2,
+        LightTheme = 3,
+    };
 
     explicit QSourceHighliter(QTextDocument* doc);
     QSourceHighliter(QTextDocument* doc, Themes theme);

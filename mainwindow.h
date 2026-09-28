@@ -91,6 +91,9 @@ class MainWindow : public QMainWindow {
     int loadDataFromTXTFile(const QString& path);
     int loadDataFromJSONFile(const QString& path);
 
+    // Theme setter
+    void applyEditorBackground(QSourceHighlite::QSourceHighliter::Themes theme);
+
   private slots:
     void themeChanged(int);
     void languageChanged(const QString& lang);
