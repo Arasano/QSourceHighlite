@@ -211,17 +211,20 @@ static QHash<QSourceHighliter::Token, QTextCharFormat> lIghtTheme() {
     return _formats;
 }
 
+
+// Default theme: empty formats, the editor keeps its standard look
+static QHash<QSourceHighliter::Token, QTextCharFormat> defaultTheme() {
+    return formats();
+}
+
 QHash<QSourceHighliter::Token, QTextCharFormat>
 QSourceHighliterTheme::theme(QSourceHighliter::Themes theme) {
     switch (theme) {
-        case QSourceHighliter::Themes::Monokai:
-            return monokai();
-        case QSourceHighliter::Themes::LightTheme:
-            return lIghtTheme();
-        case QSourceHighliter::Themes::DarkTheme:
-            return darkTheme();
-        default:
-            return {monokai()};//monokai is default value
+        case QSourceHighliter::Themes::Monokai:      return monokai();
+        case QSourceHighliter::Themes::LightTheme:   return lIghtTheme();
+        case QSourceHighliter::Themes::DarkTheme:    return darkTheme();
+        case QSourceHighliter::Themes::DefaultTheme: return defaultTheme();
+        default: return defaultTheme();   // unknown id -> standard look, never crash
     }
 }
 

@@ -53,6 +53,12 @@ void QSourceHighliter::setTheme(QSourceHighliter::Themes theme) {
     rehighlight();
 }
 
+void QSourceHighliter::setFormats(const QHash<Token, QTextCharFormat>& formats) {
+    _formats = formats;
+    rehighlight();
+}
+
+
 void QSourceHighliter::highlightBlock(const QString& text) {
     if (currentBlock() == document()->firstBlock()) {
         setCurrentBlockState(_language);

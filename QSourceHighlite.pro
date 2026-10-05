@@ -10,11 +10,13 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
     main.cpp \
     mainwindow.cpp \
-    searchdialog.cpp
+    searchdialog.cpp \
+    themedialog.cpp
 
 HEADERS += \
     mainwindow.h \
-    searchdialog.h
+    searchdialog.h \
+    themedialog.h
 
 FORMS += \
     mainwindow.ui \

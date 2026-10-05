@@ -25,21 +25,33 @@
 
 #include "qsourcehighliter.h"
 #include "qsourcehighliterthemes.h"
+#include "themedata.h"
+#include "themedialog.h"
 #include "ui_mainwindow.h"
 
+#include <QCoreApplication>
 #include <QDebug>
 #include <QDir>
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QJsonArray>
+#include <QJsonDocument>
 #include <QJsonObject>
+#include <QJsonValue>
 #include <QMessageBox>
 #include <QPushButton>
 
 using namespace QSourceHighlite;
 
+class QJsonArray;
+class QJsonObject;
+
 QHash<QString, QSourceHighliter::Language> MainWindow::_langStringToEnum;
 
 MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWindow) {
+    ui->setupUi(this);
+
+    m_defaultPalette = qApp->palette();      // capture standard palette BEFORE any theming
     ui->setupUi(this);
 
     initLangsEnum();
@@ -52,6 +64,8 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     initMainButtons();
     initMenuButtons();
+    initToolBarButtons();
+    initCustomThemes();                      // add user themes to the combo
 
     initToolBarButtons();
 
@@ -60,6 +74,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     setDefaultFont();
     setDefaultInfo();
+    themeChanged(ui->themeComboBox->currentIndex());   // apply Default at startup
 }
 
 MainWindow::~MainWindow() {
@@ -122,6 +137,10 @@ void MainWindow::initMenuButtons() {
     connect(ui->actionSearch, &QAction::triggered, this, &MainWindow::onSearch);
 
     connect(ui->plainTextEdit, &QPlainTextEdit::textChanged, this, [this]() { isTextChanged = 1; });
+
+    QAction* actionCreateTheme = new QAction(tr("Create theme..."), this);
+    ui->menuEdit->addAction(actionCreateTheme);
+    connect(actionCreateTheme, &QAction::triggered, this, &MainWindow::onCreateCustomTheme);
 }
 
 void MainWindow::initToolBarButtons() {
@@ -208,7 +227,8 @@ bool MainWindow::onSaveAsJSON() {
 
     QJsonObject root;
     root["language"] = ui->langComboBox->currentText();
-    root["text"] = ui->plainTextEdit->toPlainText();
+    root["text"]     = ui->plainTextEdit->toPlainText();
+    root["theme"]    = ui->themeComboBox->currentData().toInt();
 
     QJsonDocument doc(root);
     file.write(doc.toJson());
@@ -315,21 +335,26 @@ int MainWindow::loadDataFromJSONFile(const QString& path) {
     QString lang = obj["language"].toString();
     QString text = obj["text"].toString();
 
-    // Set text in the plain
     ui->plainTextEdit->setPlainText(text);
 
-    if (lang.isEmpty()) {
-        ui->statusBar->showMessage("Error: can't define language", 3000);
-        return 1;
+    if (lang.isEmpty() || !_langStringToEnum.contains(lang)) {
+        ui->statusBar->showMessage("Error: unsupported language, Asm applied", 3000);
+        ui->langComboBox->setCurrentText("Asm");
+    } else {
+        ui->langComboBox->setCurrentText(lang);
     }
 
-    if (!_langStringToEnum.contains(lang)) {
-        ui->statusBar->showMessage("Error: file has not supported suffix", 3000);
-        ui->langComboBox->setCurrentText(_langStringToEnum.key(QSourceHighliter::CodeAsm));
-        return 1;
+    if (obj.contains("theme")) {
+        const QJsonValue tv = obj["theme"];
+        const int themeId = tv.isDouble() ? tv.toInt() : -1;
+        const int idx = ui->themeComboBox->findData(themeId);
+        if (idx < 0) {
+            ui->statusBar->showMessage("Error: unknown theme id, Default applied", 3000);
+            ui->themeComboBox->setCurrentIndex(0);      // Default, no crash
+        } else if (idx != ui->themeComboBox->currentIndex()) {
+            ui->themeComboBox->setCurrentIndex(idx);    // triggers themeChanged
+        }
     }
-
-    ui->langComboBox->setCurrentText(lang);
     return 0;
 }
 
@@ -486,6 +511,79 @@ void MainWindow::onSearchDialogReplaceAll(const QString& find, const QString& re
     ui->statusBar->showMessage("onSearchDialogFindNext " + find + replace, 3000);
 }
 
+
+QString MainWindow::customThemesFilePath() const {
+    return QCoreApplication::applicationDirPath() + "/custom_themes.json";
+}
+
+void MainWindow::initCustomThemes() {
+    loadCustomThemesFromFile();
+}
+
+void MainWindow::loadCustomThemesFromFile() {
+    QFile f(customThemesFilePath());
+    if (!f.exists() || !f.open(QIODevice::ReadOnly))
+        return;                                   // no custom themes yet, not an error
+    QJsonParseError err;
+    const QJsonDocument doc = QJsonDocument::fromJson(f.readAll(), &err);
+    f.close();
+    if (err.error != QJsonParseError::NoError || !doc.isArray()) {
+        ui->statusBar->showMessage("Warning: custom themes file is broken, skipped", 3000);
+        return;
+    }
+    int nextId = CustomThemeIdBase;
+    for (const QJsonValue& v : doc.array()) {
+        if (!v.isObject()) continue;
+        ThemeData data;
+        if (!ThemeData::fromJson(v.toObject(), data)) {   // validation of stored params
+            ui->statusBar->showMessage("Warning: invalid custom theme skipped", 3000);
+            continue;
+        }
+        m_customThemes.insert(nextId, data);
+        ui->themeComboBox->addItem(data.name(), nextId);
+        ++nextId;
+    }
+}
+
+void MainWindow::onCreateCustomTheme() {
+    ThemeCreateDialog dlg(this);
+    if (dlg.exec() != QDialog::Accepted)
+        return;
+    ThemeData data = dlg.themeData();
+
+    if (data.name().isEmpty() || !data.codeBlockBackground().isValid()
+        || !data.codeBlockForeground().isValid()) {
+        QMessageBox::warning(this, tr("Custom theme"), tr("Invalid theme parameters"));
+        return;
+    }
+
+    int id = CustomThemeIdBase;
+    while (m_customThemes.contains(id)) ++id;
+
+    appendCustomThemeToFile(data);
+    m_customThemes.insert(id, data);
+    ui->themeComboBox->addItem(data.name(), id);
+    ui->themeComboBox->setCurrentIndex(ui->themeComboBox->findData(id));  // apply at once
+}
+
+void MainWindow::appendCustomThemeToFile(const ThemeData& data) {
+    QJsonArray arr;
+    QFile f(customThemesFilePath());
+    if (f.exists() && f.open(QIODevice::ReadOnly)) {
+        const QJsonDocument doc = QJsonDocument::fromJson(f.readAll());
+        f.close();
+        if (doc.isArray()) arr = doc.array();
+    }
+    arr.append(data.toJson());
+    if (!f.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+        ui->statusBar->showMessage("Error: cannot write custom themes file", 3000);
+        return;
+    }
+    f.write(QJsonDocument(arr).toJson());
+    f.close();
+}
+
+
 void MainWindow::initLangsEnum() {
     MainWindow::_langStringToEnum = QHash<QString, QSourceHighliter::Language>{
         {QLatin1String("Asm"), QSourceHighliter::CodeAsm},
@@ -517,6 +615,7 @@ void MainWindow::initLangsEnum() {
 }
 
 void MainWindow::initThemesComboBox() {
+    ui->themeComboBox->addItem("Default", QSourceHighliter::Themes::DefaultTheme);  // index 0
     ui->themeComboBox->addItem("Monokai", QSourceHighliter::Themes::Monokai);
     ui->themeComboBox->addItem("Light theme", QSourceHighliter::Themes::LightTheme);
     ui->themeComboBox->addItem("Dark theme", QSourceHighliter::Themes::DarkTheme);
@@ -549,35 +648,77 @@ void MainWindow::initLangsComboBox() {
     ui->langComboBox->addItem("Yaml");
 }
 
-void MainWindow::themeChanged(int) {
-    const auto theme = (QSourceHighliter::Themes)ui->themeComboBox->currentData().toInt();
-    const auto fmts  = QSourceHighliterTheme::theme(theme);
-
-    QPalette pal;
-    pal.setColor(QPalette::Window,     roleColor(fmts, QSourceHighliter::CentralLayout,  Qt::white));
-    pal.setColor(QPalette::Base,       roleColor(fmts, QSourceHighliter::CodeBlock,      Qt::white));
-    pal.setColor(QPalette::Button,     roleColor(fmts, QSourceHighliter::ToolBar,        Qt::white));
-    pal.setColor(QPalette::WindowText, roleColor(fmts, QSourceHighliter::StringsText,  Qt::black));
-    pal.setColor(QPalette::Text,       roleColor(fmts, QSourceHighliter::StringsText,  Qt::black));
-    pal.setColor(QPalette::ButtonText, roleColor(fmts, QSourceHighliter::ButtonsText,  Qt::black));
-    pal.setColor(QPalette::Highlight,        QColor("#0078d7"));
-    pal.setColor(QPalette::HighlightedText,  Qt::white);
-    qApp->setPalette(pal); // all widget tree rehighlighter
-
-    // Update theme
-    highlighter->setTheme(theme);
-    highlighter->rehighlight();
+// Safety net: never allow "text on same-color background".
+// If a theme supplies text too close to its background, flip the text.
+void MainWindow::ensureContrast(QPalette &pal)
+{
+    auto fix = [&pal](QPalette::ColorRole bgRole, QPalette::ColorRole fgRole) {
+        const QColor bg = pal.color(bgRole);
+        const QColor fg = pal.color(fgRole);
+        if (!bg.isValid() || !fg.isValid())
+            return;
+        if (qAbs(bg.lightness() - fg.lightness()) < 40) {   // 0..255 scale
+            pal.setColor(fgRole, bg.lightness() > 127 ? QColor("#000000")
+                                                      : QColor("#ffffff"));
+        }
+    };
+    fix(QPalette::Window, QPalette::WindowText);   // labels, menubar, groupbox titles
+    fix(QPalette::Base,   QPalette::Text);         // editor / input fields text
+    fix(QPalette::Button, QPalette::ButtonText);   // buttons, combo items
+    fix(QPalette::Highlight, QPalette::HighlightedText);
 }
 
-QColor MainWindow::roleColor(const QHash<QSourceHighliter::Token, QTextCharFormat> &formats,
-                        QSourceHighliter::Token role,
-                        const QColor &fallback)
+
+void MainWindow::themeChanged(int)
 {
+    const int id = ui->themeComboBox->currentData().toInt();
+
+           // user-defined theme
+    if (id >= CustomThemeIdBase && m_customThemes.contains(id)) {
+        const ThemeData data = m_customThemes.value(id);
+        QPalette pal = data.toPalette(m_defaultPalette);
+        ensureContrast(pal);                              // <-- safety net
+        qApp->setPalette(pal);
+        highlighter->setFormats(data.toTokenFormats());
+        return;
+    }
+
+    const auto theme = static_cast<QSourceHighliter::Themes>(id);
+    if (theme == QSourceHighliter::Themes::DefaultTheme) {
+        qApp->setPalette(m_defaultPalette);               // standard look, already consistent
+    } else {
+        const auto fmts = QSourceHighliterTheme::theme(theme);
+        QPalette pal = m_defaultPalette;
+        pal.setColor(QPalette::Window,     roleColor(fmts,  QSourceHighliter::CentralLayout,  Qt::white));
+        pal.setColor(QPalette::Base,       roleColor(fmts,  QSourceHighliter::CodeBlock,      Qt::white));
+        pal.setColor(QPalette::Button,     roleColor(fmts,  QSourceHighliter::ToolBarButtons, Qt::white));
+        pal.setColor(QPalette::WindowText, roleFgColor(fmts, QSourceHighliter::StringsText,   Qt::black));
+        pal.setColor(QPalette::Text,       roleFgColor(fmts, QSourceHighliter::CodeBlock,     Qt::black));
+        pal.setColor(QPalette::ButtonText, roleFgColor(fmts, QSourceHighliter::ButtonsText,   Qt::black));
+        ensureContrast(pal);                              // <-- safety net
+        qApp->setPalette(pal);
+    }
+
+    highlighter->setTheme(theme);
+}
+QColor MainWindow::roleFgColor(const QHash<QSourceHighliter::Token, QTextCharFormat>& formats,
+                               QSourceHighliter::Token role, const QColor& fallback) {
     auto it = formats.constFind(role);
-    if (it == formats.constEnd())          // the theme has no role
+    if (it == formats.constEnd())
+        return fallback;
+    const QBrush br = it.value().foreground();
+    if (br.style() == Qt::NoBrush)
+        return fallback;
+    return br.color().isValid() ? br.color() : fallback;
+}
+QColor MainWindow::roleColor(const QHash<QSourceHighliter::Token, QTextCharFormat>& formats,
+                             QSourceHighliter::Token role,
+                             const QColor& fallback) {
+    auto it = formats.constFind(role);
+    if (it == formats.constEnd())          // the theme has no such role
         return fallback;
     const QBrush br = it.value().background();
-    if (br.style() == Qt::NoBrush)         // the brush is not seted
+    if (br.style() == Qt::NoBrush)         // background brush is not set
         return fallback;
     return br.color().isValid() ? br.color() : fallback;
 }

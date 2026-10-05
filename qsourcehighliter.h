@@ -35,6 +35,7 @@ namespace QSourceHighlite {
 class QSourceHighliter : public QSyntaxHighlighter {
   public:
     enum Themes {
+        DefaultTheme = 0,   // standard editor look, no custom colors
         Monokai = 1,
         DarkTheme = 2,
         LightTheme = 3,
@@ -122,6 +123,9 @@ class QSourceHighliter : public QSyntaxHighlighter {
     void setCurrentLanguage(Language language);
     Q_REQUIRED_RESULT Language currentLanguage();
     void setTheme(Themes theme);
+
+    // Applies externally built formats (used for user-defined themes)
+    void setFormats(const QHash<Token, QTextCharFormat>& formats);
 
   protected:
     void highlightBlock(const QString& text) override;

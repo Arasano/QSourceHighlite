@@ -28,6 +28,8 @@
 #include "qsourcehighliter.h"
 #include "qsourcehighliterthemes.h"
 #include <searchdialog.h>
+#include "themedata.h"
+#include <QMap>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -98,8 +100,26 @@ class MainWindow : public QMainWindow {
                             QSourceHighlite::QSourceHighliter::Token role,
                             const QColor &fallback);
 
+
+    QPalette m_defaultPalette;                 // standard palette, captured at startup
+    QMap<int, ThemeData> m_customThemes;       // user themes by combo data id
+    static constexpr int CustomThemeIdBase = 1000;
+
+    void initCustomThemes();                   // load user themes from file at startup
+    void loadCustomThemesFromFile();
+    void appendCustomThemeToFile(const ThemeData &data);
+    QString customThemesFilePath() const;
+
+    QColor roleFgColor(const QHash<QSourceHighlite::QSourceHighliter::Token, QTextCharFormat> &formats,
+                       QSourceHighlite::QSourceHighliter::Token role,
+                       const QColor &fallback);
+
+    void ensureContrast(QPalette &pal);
+
+
   private slots:
     void themeChanged(int);
     void languageChanged(const QString& lang);
+    void onCreateCustomTheme();
 };
 #endif // MAINWINDOW_H
