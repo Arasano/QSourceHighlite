@@ -25,7 +25,8 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <qsourcehighliter.h>
+#include "qsourcehighliter.h"
+#include "qsourcehighliterthemes.h"
 #include <searchdialog.h>
 
 QT_BEGIN_NAMESPACE
@@ -92,7 +93,10 @@ class MainWindow : public QMainWindow {
     int loadDataFromJSONFile(const QString& path);
 
     // Theme setter
-    void applyEditorBackground(QSourceHighlite::QSourceHighliter::Themes theme);
+    // Change color
+    QColor roleColor(const QHash<QSourceHighlite::QSourceHighliter::Token, QTextCharFormat> &formats,
+                            QSourceHighlite::QSourceHighliter::Token role,
+                            const QColor &fallback);
 
   private slots:
     void themeChanged(int);

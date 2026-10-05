@@ -97,6 +97,17 @@ class QSourceHighliter : public QSyntaxHighlighter {
     Q_ENUM(Language)
 
     enum Token {
+        MenuBar,
+        MenuBarButtons,
+        Sections,
+        ToolBar,
+        ToolBarButtons,
+        CentralLayout,
+        SettingsLayout,
+        SettingsLayoutBorder,
+        StringsText,
+        ButtonsText,
+
         CodeBlock,
         CodeKeyWord,
         CodeString,
@@ -144,7 +155,6 @@ class QSourceHighliter : public QSyntaxHighlighter {
     void makeHighlighter(const QString& text);
     void highlightInlineAsmLabels(const QString& text);
     void asmHighlighter(const QString& text);
-    void initFormats();
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     static inline QStringView strMidRef(const QString& str, qsizetype position, qsizetype n = -1) {

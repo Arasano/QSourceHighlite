@@ -550,32 +550,36 @@ void MainWindow::initLangsComboBox() {
 }
 
 void MainWindow::themeChanged(int) {
-    // Change theme for specific lang
-    QSourceHighliter::Themes theme =
-        (QSourceHighliter::Themes)ui->themeComboBox->currentData().toInt();
+    const auto theme = (QSourceHighliter::Themes)ui->themeComboBox->currentData().toInt();
+    const auto fmts  = QSourceHighliterTheme::theme(theme);
+
+    QPalette pal;
+    pal.setColor(QPalette::Window,     roleColor(fmts, QSourceHighliter::CentralLayout,  Qt::white));
+    pal.setColor(QPalette::Base,       roleColor(fmts, QSourceHighliter::CodeBlock,      Qt::white));
+    pal.setColor(QPalette::Button,     roleColor(fmts, QSourceHighliter::ToolBar,        Qt::white));
+    pal.setColor(QPalette::WindowText, roleColor(fmts, QSourceHighliter::StringsText,  Qt::black));
+    pal.setColor(QPalette::Text,       roleColor(fmts, QSourceHighliter::StringsText,  Qt::black));
+    pal.setColor(QPalette::ButtonText, roleColor(fmts, QSourceHighliter::ButtonsText,  Qt::black));
+    pal.setColor(QPalette::Highlight,        QColor("#0078d7"));
+    pal.setColor(QPalette::HighlightedText,  Qt::white);
+    qApp->setPalette(pal); // all widget tree rehighlighter
+
     // Update theme
     highlighter->setTheme(theme);
     highlighter->rehighlight();
 }
 
-void MainWindow::applyEditorBackground(QSourceHighlite::QSourceHighliter::Themes theme){
-    // Get format for current theme
-    auto themeFormats = QSourceHighliterTheme::theme(theme);
-
-    // Take block format - it contains all string background
-    QTextCharFormat blockFormat = themeFormats.value(QSourceHighliter::CodeBlock);
-
-    // Get background color, dafault white
-    QColor bgColor = blockFormat.background().color();
-    if(!bgColor.isValid()){
-        bgColor = Qt::white;
-    }
-
-    // Set backgtound style
-    QString styleSheet = QString("QPlainTExtEdit { background-color: %1; }").arg(bgColor.name());
-
-    // Set editor style
-    ui->plainTextEdit->setStyleSheet(styleSheet);
+QColor MainWindow::roleColor(const QHash<QSourceHighliter::Token, QTextCharFormat> &formats,
+                        QSourceHighliter::Token role,
+                        const QColor &fallback)
+{
+    auto it = formats.constFind(role);
+    if (it == formats.constEnd())          // the theme has no role
+        return fallback;
+    const QBrush br = it.value().background();
+    if (br.style() == Qt::NoBrush)         // the brush is not seted
+        return fallback;
+    return br.color().isValid() ? br.color() : fallback;
 }
 
 void MainWindow::languageChanged(const QString& lang) {
@@ -585,12 +589,4 @@ void MainWindow::languageChanged(const QString& lang) {
     highlighter->rehighlight();
 
     ui->statusBar->showMessage("Language is changed to " + lang, 3000);
-
-    // Open default example of new lang
-    //  QFile f(QDir::currentPath() + "/../test_files/" + lang + ".txt");
-    //  if (f.open(QIODevice::ReadOnly | QIODevice::Text)) {
-    //      const auto text = f.readAll();
-    //      ui->plainTextEdit->setPlainText(QString::fromUtf8(text));
-    //  }
-    //  f.close();
 }
