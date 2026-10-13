@@ -25,6 +25,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include "qprocess.h"
 #include "qsourcehighliter.h"
 #include "qsourcehighliterthemes.h"
 #include <searchdialog.h>
@@ -50,12 +51,19 @@ class MainWindow : public QMainWindow {
   private:
     Ui::MainWindow* ui;
 
+    // Process when we start compilation of code
+    QProcess* mainCompilationProcess;
+
     QSourceHighlite::QSourceHighliter* highlighter;
     static QHash<QString, QSourceHighlite::QSourceHighliter::Language> _langStringToEnum;
 
     SearchDialog* dialog;
 
+    QSourceHighlite::QSourceHighliter::Language selectedLanguage;
+
     int isTextChanged = 0;
+    int isCompiling = 0;
+
 
     // Inits
     void initLangsEnum();
@@ -76,8 +84,13 @@ class MainWindow : public QMainWindow {
     void initEventConnectors();
 
     // Compile buttons
+<<<<<<< HEAD
     bool onCompileBtnClicked();
     bool onStopBtnClicked();
+=======
+    int onCompileBtnClicked();
+    int onStopBtnClicked();
+>>>>>>> 72c826d (feat(compilation): add compile stop btns, add compilation for python files)
 
     // Menu buttons
     bool onSaveAsTXT();
@@ -100,8 +113,14 @@ class MainWindow : public QMainWindow {
 
     // Working with script
     int writeInFile(QStringView filePath, QStringView info);
+<<<<<<< HEAD
     int runProgram(QStringView filePath, QString &output, QString &error);
     int stopProgram();
+=======
+    int runProgram(QStringView filePath);
+    int stopProgram();
+    int onProgramFinished();
+>>>>>>> 72c826d (feat(compilation): add compile stop btns, add compilation for python files)
 
     // Theme setter
     // Change color

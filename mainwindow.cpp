@@ -191,6 +191,7 @@ void MainWindow::initEventConnectors() {
     connect(ui->plainTextEdit, &QPlainTextEdit::textChanged, this, [this]() { isTextChanged = 1; });
 }
 
+<<<<<<< HEAD
 bool MainWindow::onCompileBtnClicked() {
     ui->stopPushButton->setDisabled(false);
 
@@ -210,6 +211,34 @@ bool MainWindow::onCompileBtnClicked() {
 bool MainWindow::onStopBtnClicked() {
     ui->stopPushButton->setDisabled(true);
     return true;
+=======
+//
+// message = "Hello, World!"
+// print(message)
+
+int MainWindow::onCompileBtnClicked() {
+
+    if(selectedLanguage != _langStringToEnum.value("Python")){
+        ui->statusBar->showMessage("Error: Compilation is set just for Python", 3000);
+        return 1;
+    }
+
+    if(isCompiling) return 0;
+
+    ui->stopPushButton->setDisabled(false);
+
+    QString fileName = "temp.txt";
+    if(writeInFile(fileName, ui->plainTextEdit->toPlainText())) return 1;
+
+    if(runProgram(fileName)) return 1;
+
+    return 0;
+}
+
+int MainWindow::onStopBtnClicked() {
+    ui->stopPushButton->setDisabled(true);
+    return 0;
+>>>>>>> 72c826d (feat(compilation): add compile stop btns, add compilation for python files)
 }
 
 int MainWindow::writeInFile(QStringView filePath, QStringView info) {
@@ -231,6 +260,7 @@ int MainWindow::writeInFile(QStringView filePath, QStringView info) {
 
 }
 
+<<<<<<< HEAD
 // int MainWindow::loadTxtFile(QStringView filePath, QString &text) {
 
 //     QFile file(filePath.toString());
@@ -253,25 +283,48 @@ int MainWindow::runProgram(QStringView filePath, QString &output, QString &error
     proc.start("python", QStringList() << filePath.toString());
 
     if(!proc.waitForStarted()){
+=======
+int MainWindow::runProgram(QStringView filePath) {
+
+    mainCompilationProcess->start("python", QStringList() << filePath.toString());
+
+    if(!mainCompilationProcess->waitForStarted()){
+>>>>>>> 72c826d (feat(compilation): add compile stop btns, add compilation for python files)
         ui->statusBar->showMessage("Error: Python is not installed or filepath: " + filePath + " is not found", 3000);
         return 1;
     }
 
+<<<<<<< HEAD
     proc.waitForFinished(3000);
 
     output = proc.readAllStandardOutput();
     error = proc.readAllStandardError();
+=======
+    connect(mainCompilationProcess, &QProcess::finished, this, &MainWindow::onProgramFinished);
+>>>>>>> 72c826d (feat(compilation): add compile stop btns, add compilation for python files)
     return 0;
 }
 
 int MainWindow::stopProgram() {
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 72c826d (feat(compilation): add compile stop btns, add compilation for python files)
     QProcess proc;
     //proc.start("python", QStringList() << filePath());
     return 0;
 }
 
+<<<<<<< HEAD
+=======
+int MainWindow::onProgramFinished() {
+    ui->outputWindow->setPlainText(mainCompilationProcess->readAllStandardOutput() + "/n" + mainCompilationProcess->readAllStandardError());
+    return 0;
+}
+
+
+>>>>>>> 72c826d (feat(compilation): add compile stop btns, add compilation for python files)
 
 
 void MainWindow::closeEvent(QCloseEvent* event) {
@@ -821,6 +874,8 @@ QColor MainWindow::roleColor(const QHash<QSourceHighliter::Token, QTextCharForma
 void MainWindow::languageChanged(const QString& lang) {
     // Change lang
     highlighter->setCurrentLanguage(_langStringToEnum.value(lang));
+    selectedLanguage = _langStringToEnum.value(lang);
+
     // Update highlight in ui
     highlighter->rehighlight();
 
