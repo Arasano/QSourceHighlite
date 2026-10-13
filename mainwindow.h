@@ -75,6 +75,10 @@ class MainWindow : public QMainWindow {
     void initSearchDialogConnectors();
     void initEventConnectors();
 
+    // Compile buttons
+    bool onCompileBtnClicked();
+    bool onStopBtnClicked();
+
     // Menu buttons
     bool onSaveAsTXT();
     bool onSaveAsJSON();
@@ -93,6 +97,11 @@ class MainWindow : public QMainWindow {
     // Working with file
     int loadDataFromTXTFile(const QString& path);
     int loadDataFromJSONFile(const QString& path);
+
+    // Working with script
+    int writeInFile(QStringView filePath, QStringView info);
+    int runProgram(QStringView filePath, QString &output, QString &error);
+    int stopProgram();
 
     // Theme setter
     // Change color

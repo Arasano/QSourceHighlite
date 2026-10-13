@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>600</height>
+    <width>517</width>
+    <height>538</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -60,11 +60,28 @@
        <item row="3" column="0">
         <widget class="QComboBox" name="themeComboBox"/>
        </item>
+       <item row="4" column="0">
+        <widget class="QPushButton" name="compilePushButton">
+         <property name="text">
+          <string>Compile</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="0">
+        <widget class="QPushButton" name="stopPushButton">
+         <property name="text">
+          <string>Stop</string>
+         </property>
+        </widget>
+       </item>
       </layout>
      </widget>
     </item>
     <item>
      <widget class="QPlainTextEdit" name="plainTextEdit"/>
+    </item>
+    <item>
+     <widget class="QPlainTextEdit" name="outputWindow"/>
     </item>
    </layout>
   </widget>
@@ -74,8 +91,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
-     <height>21</height>
+     <width>517</width>
+     <height>23</height>
     </rect>
    </property>
    <property name="sizePolicy">

@@ -40,6 +40,7 @@
 #include <QJsonValue>
 #include <QMessageBox>
 #include <QPushButton>
+#include <QProcess>
 
 using namespace QSourceHighlite;
 
@@ -100,9 +101,20 @@ void MainWindow::initMainButtons() {
     connect(ui->themeComboBox,
             static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this,
             &MainWindow::themeChanged);
+
     // Print debug info
     // connect(ui->plainTextEdit, &QPlainTextEdit::textChanged, this,
     // &MainWindow::printDebug);
+
+    connect(ui->compilePushButton,
+            &QPushButton::clicked, this,
+            &MainWindow::onCompileBtnClicked);
+
+    connect(ui->stopPushButton,
+            &QPushButton::clicked, this,
+            &MainWindow::onStopBtnClicked);
+
+    ui->stopPushButton->setDisabled(true);
 }
 
 void MainWindow::initSearchDialogConnectors() {
@@ -178,6 +190,89 @@ void MainWindow::initEventConnectors() {
     // If text changed
     connect(ui->plainTextEdit, &QPlainTextEdit::textChanged, this, [this]() { isTextChanged = 1; });
 }
+
+bool MainWindow::onCompileBtnClicked() {
+    ui->stopPushButton->setDisabled(false);
+
+    QString fileName = "temp.txt";
+    if(writeInFile(fileName, ui->plainTextEdit->toPlainText())){
+        return false;
+    };
+    QString output;
+    QString error;
+    if(runProgram(fileName, output, error)){
+        return false;
+    };
+    ui->outputWindow->setPlainText(error + "/n" + output);
+    return true;
+}
+
+bool MainWindow::onStopBtnClicked() {
+    ui->stopPushButton->setDisabled(true);
+    return true;
+}
+
+int MainWindow::writeInFile(QStringView filePath, QStringView info) {
+
+    QFile file;
+    file.setFileName(filePath.toString());
+
+    if(!file.open(QIODevice::WriteOnly|QIODevice::Text))
+    {
+        qDebug() << "Create "+filePath+" Filed!";
+        return 1;
+    }
+
+    QTextStream stream(&file);
+    stream << info << Qt::endl;
+
+    file.close();
+    return !file.exists();
+
+}
+
+// int MainWindow::loadTxtFile(QStringView filePath, QString &text) {
+
+//     QFile file(filePath.toString());
+//     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)){
+//         qDebug() << "Open "+filePath+" Filed!";
+//         return;
+//     }
+
+//     QTextStream in(&file);
+//     text = in.readLine();
+//     while (!text.isNull()) {
+//         text = in.readLine();
+//     }
+//     return 0;
+// }
+
+int MainWindow::runProgram(QStringView filePath, QString &output, QString &error) {
+
+    QProcess proc;
+    proc.start("python", QStringList() << filePath.toString());
+
+    if(!proc.waitForStarted()){
+        ui->statusBar->showMessage("Error: Python is not installed or filepath: " + filePath + " is not found", 3000);
+        return 1;
+    }
+
+    proc.waitForFinished(3000);
+
+    output = proc.readAllStandardOutput();
+    error = proc.readAllStandardError();
+    return 0;
+}
+
+int MainWindow::stopProgram() {
+
+
+    QProcess proc;
+    //proc.start("python", QStringList() << filePath());
+    return 0;
+}
+
+
 
 void MainWindow::closeEvent(QCloseEvent* event) {
     // If exit button pressed
