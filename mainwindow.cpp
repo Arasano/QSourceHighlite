@@ -54,6 +54,11 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     m_defaultPalette = qApp->palette();      // capture standard palette BEFORE any theming
 
+    m_thread = new QThread(this);
+    m_runner = new ScriptRunner();
+    m_runner->moveToThread(m_thread);
+    m_thread->start();
+
     initLangsEnum();
 
     initLangsComboBox();
@@ -61,8 +66,6 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     // Init highlighter
     highlighter = new QSourceHighliter(ui->plainTextEdit->document());
-
-    mainCompilationProcess = new QProcess(this);
 
     initMainButtons();
     initMenuButtons();
@@ -77,9 +80,16 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWi
     setDefaultFont();
     setDefaultInfo();
     themeChanged(ui->themeComboBox->currentIndex());   // apply Default at startup
+
+    ui->outputWindow->setMaximumBlockCount(2000);
+    ui->outputWindow->setWordWrapMode(QTextOption::NoWrap);
+    ui->outputWindow->setLineWrapMode(QPlainTextEdit::NoWrap);
 }
 
 MainWindow::~MainWindow() {
+    m_thread->quit();
+    m_thread->wait();
+
     delete ui;
 }
 
@@ -191,101 +201,37 @@ void MainWindow::initEventConnectors() {
     // If text changed
     connect(ui->plainTextEdit, &QPlainTextEdit::textChanged, this, [this]() { isTextChanged = 1; });
 
-    connect(mainCompilationProcess, &QProcess::finished, this, &MainWindow::onProgramFinished);
-    connect(mainCompilationProcess, &QProcess::errorOccurred, this, &MainWindow::onProgramErrorOccurred);
-    connect(mainCompilationProcess, &QProcess::readyReadStandardOutput, this, &MainWindow::onProgramStandardOutput);
-    connect(mainCompilationProcess, &QProcess::readyReadStandardError, this, &MainWindow::onProgramStandardError);
+    connect(this, &MainWindow::runRequested,  m_runner, &ScriptRunner::runProgram);
+    connect(this, &MainWindow::stopRequested, m_runner, &ScriptRunner::stopProgram);
+
+    connect(m_runner, &ScriptRunner::finished, this, &MainWindow::onProgramFinished);
+    connect(m_runner, &ScriptRunner::errorOccurred, this, &MainWindow::onProgramErrorOccurred);
+    connect(m_runner, &ScriptRunner::standardOutput, this, &MainWindow::onProgramStandardOutput);
+    connect(m_runner, &ScriptRunner::standardError, this, &MainWindow::onProgramStandardError);
+
+    connect(m_thread, &QThread::finished, m_runner, &QObject::deleteLater);
 }
 
 void MainWindow::onCompileBtnClicked() {
-
     if(selectedLanguage != _langStringToEnum.value("Python")){
         ui->statusBar->showMessage("Error: Compilation is set just for Python", 3000);
         return;
     }
 
-    QString res;
-    if(!isPythonAvailable(&res)){
-        ui->statusBar->showMessage("Error: user has no python installed", 3000);
-        return;
-    }
-
-    ui->stopPushButton->setEnabled(true);
-
     QString fileName = "temp.txt";
-    if(writeInFile(fileName, ui->plainTextEdit->toPlainText())){
-        ui->statusBar->showMessage("Error: write in file with fileName " + fileName + " gets error", 3000);
-        return;
-    }
-
-    if(runProgram(fileName)){
-        ui->statusBar->showMessage("Error: programm with fileName " + fileName + " gets error", 3000);
-        return;
-    }
-
+    emit runRequested(fileName, ui->plainTextEdit->toPlainText());
 
     ui->compilePushButton->setEnabled(false);
     ui->stopPushButton->setEnabled(true);
-
-    return;
 }
 
 void MainWindow::onStopBtnClicked() {
+    ui->compilePushButton->setEnabled(true);
     ui->stopPushButton->setEnabled(false);
-    stopProgram();
-    return;
+
+    emit stopRequested();
 }
 
-int MainWindow::writeInFile(QStringView filePath, QStringView info) {
-
-    QFile file;
-    file.setFileName(filePath.toString());
-
-    if(!file.open(QIODevice::WriteOnly|QIODevice::Text))
-    {
-        qDebug() << "Create "+filePath+" Filed!";
-        return 1;
-    }
-
-    QTextStream stream(&file);
-    stream << info << Qt::endl;
-
-    file.close();
-    return !file.exists();
-
-}
-
-int MainWindow::runProgram(QStringView filePath) {
-
-    if (mainCompilationProcess && mainCompilationProcess->state() != QProcess::NotRunning) {
-        ui->statusBar->showMessage("Error: Script is already running", 3000);
-        return 1;
-    }
-
-    if (!mainCompilationProcess) {
-        mainCompilationProcess = new QProcess(this);
-    }
-
-    mainCompilationProcess->start("python", QStringList() << filePath.toString());
-
-    if(!mainCompilationProcess->waitForStarted()){
-        ui->statusBar->showMessage("Error: Python is not installed or filepath: " + filePath + " is not found", 3000);
-        return 1;
-    }
-    return 0;
-}
-
-int MainWindow::stopProgram() {
-    if (!mainCompilationProcess || mainCompilationProcess->state() == QProcess::NotRunning)
-        return 1;
-
-    mainCompilationProcess->terminate();
-
-    if (!mainCompilationProcess->waitForFinished(1000))
-        mainCompilationProcess->kill();
-
-    return 0;
-}
 
 void MainWindow::onProgramFinished(int code, QProcess::ExitStatus st) {
 
@@ -297,63 +243,21 @@ void MainWindow::onProgramFinished(int code, QProcess::ExitStatus st) {
         ui->statusBar->showMessage("Finished with exit code " + QString::number(code), 3000);
     else
         ui->statusBar->showMessage("Finished OK", 3000);
-
-    return;
 }
-
 
 void MainWindow::onProgramErrorOccurred(QProcess::ProcessError e) {
 
     if (e == QProcess::FailedToStart){
         ui->statusBar->showMessage("Interpreter not found or not executable", 3000);
     }
-    return;
 }
 
-void MainWindow::onProgramStandardError() {
-    ui->outputWindow->appendPlainText(QString::fromUtf8(mainCompilationProcess->readAllStandardError()));
-    return;
+void MainWindow::onProgramStandardError(const QString &error) {
+    ui->outputWindow->appendPlainText(error);
 }
 
-void MainWindow::onProgramStandardOutput() {
-    ui->outputWindow->appendPlainText(QString::fromUtf8(mainCompilationProcess->readAllStandardOutput()));
-    return;
-}
-
-
-QString MainWindow::findPythonInterpreter() const
-{
-    const QStringList candidates = { QStringLiteral("python3"),
-                                    QStringLiteral("python"),
-                                    QStringLiteral("py") };
-    for (const QString &name : candidates) {
-        const QString path = QStandardPaths::findExecutable(name);
-        if (!path.isEmpty())
-            return path;
-    }
-    return QString();   // интерпретатор не найден
-}
-
-bool MainWindow::isPythonAvailable(QString *versionOut)
-{
-    const QString python = findPythonInterpreter();
-    if (python.isEmpty())
-        return false;
-
-    QProcess probe;
-    probe.start(python, { QStringLiteral("--version") });
-
-    if (!probe.waitForFinished(3000)) {
-        probe.kill();
-        probe.waitForFinished(1000);
-        return false;
-    }
-    if (probe.exitStatus() != QProcess::NormalExit || probe.exitCode() != 0)
-        return false;
-
-    if (versionOut)
-        *versionOut = QString::fromUtf8(probe.readAllStandardOutput()).trimmed();
-    return true;
+void MainWindow::onProgramStandardOutput(const QString &output) {
+    ui->outputWindow->appendPlainText(output);
 }
 
 

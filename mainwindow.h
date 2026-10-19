@@ -27,10 +27,12 @@
 #include <QMainWindow>
 #include "qprocess.h"
 #include "qsourcehighliter.h"
-#include "qsourcehighliterthemes.h"
 #include <searchdialog.h>
 #include "themedata.h"
 #include <QMap>
+#include "scriptrunner.h"
+#include <QThread>
+#include "qsourcehighliterthemes.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -52,12 +54,15 @@ class MainWindow : public QMainWindow {
     Ui::MainWindow* ui;
 
     // Process when we start compilation of code
-    QProcess* mainCompilationProcess;
+    QThread* mainScript;
 
     QSourceHighlite::QSourceHighliter* highlighter;
     static QHash<QString, QSourceHighlite::QSourceHighliter::Language> _langStringToEnum;
 
     SearchDialog* dialog;
+
+    QThread* m_thread = nullptr;
+    ScriptRunner* m_runner = nullptr;
 
     QSourceHighlite::QSourceHighliter::Language selectedLanguage;
 
@@ -107,13 +112,10 @@ class MainWindow : public QMainWindow {
     int loadDataFromJSONFile(const QString& path);
 
     // Working with script
-    int writeInFile(QStringView filePath, QStringView info);
-    int runProgram(QStringView filePath);
-    int stopProgram();
     void onProgramFinished(int code, QProcess::ExitStatus st);
     void onProgramErrorOccurred(QProcess::ProcessError e);
-    void onProgramStandardError();
-    void onProgramStandardOutput();
+    void onProgramStandardError(const QString &error);
+    void onProgramStandardOutput(const QString &output);
 
     QString findPythonInterpreter() const;
     bool isPythonAvailable(QString *versionOut);
@@ -146,5 +148,9 @@ class MainWindow : public QMainWindow {
     void themeChanged(int);
     void languageChanged(const QString& lang);
     void onCreateCustomTheme();
+
+    signals:
+    void runRequested(const QString &filename, const QString &ode);
+    void stopRequested();
 };
 #endif // MAINWINDOW_H
