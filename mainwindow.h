@@ -84,13 +84,8 @@ class MainWindow : public QMainWindow {
     void initEventConnectors();
 
     // Compile buttons
-<<<<<<< HEAD
-    bool onCompileBtnClicked();
-    bool onStopBtnClicked();
-=======
-    int onCompileBtnClicked();
-    int onStopBtnClicked();
->>>>>>> 72c826d (feat(compilation): add compile stop btns, add compilation for python files)
+    void onCompileBtnClicked();
+    void onStopBtnClicked();
 
     // Menu buttons
     bool onSaveAsTXT();
@@ -113,14 +108,16 @@ class MainWindow : public QMainWindow {
 
     // Working with script
     int writeInFile(QStringView filePath, QStringView info);
-<<<<<<< HEAD
-    int runProgram(QStringView filePath, QString &output, QString &error);
-    int stopProgram();
-=======
     int runProgram(QStringView filePath);
     int stopProgram();
-    int onProgramFinished();
->>>>>>> 72c826d (feat(compilation): add compile stop btns, add compilation for python files)
+    void onProgramFinished(int code, QProcess::ExitStatus st);
+    void onProgramErrorOccurred(QProcess::ProcessError e);
+    void onProgramStandardError();
+    void onProgramStandardOutput();
+
+    QString findPythonInterpreter() const;
+    bool isPythonAvailable(QString *versionOut);
+
 
     // Theme setter
     // Change color

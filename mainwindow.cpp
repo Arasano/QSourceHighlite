@@ -24,11 +24,10 @@
 #include "mainwindow.h"
 
 #include "qsourcehighliter.h"
-#include "qsourcehighliterthemes.h"
 #include "themedata.h"
 #include "themedialog.h"
 #include "ui_mainwindow.h"
-
+#include <QAction>
 #include <QCoreApplication>
 #include <QDebug>
 #include <QDir>
@@ -41,6 +40,7 @@
 #include <QMessageBox>
 #include <QPushButton>
 #include <QProcess>
+#include <QStandardPaths>
 
 using namespace QSourceHighlite;
 
@@ -53,7 +53,6 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->setupUi(this);
 
     m_defaultPalette = qApp->palette();      // capture standard palette BEFORE any theming
-    ui->setupUi(this);
 
     initLangsEnum();
 
@@ -62,6 +61,8 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     // Init highlighter
     highlighter = new QSourceHighliter(ui->plainTextEdit->document());
+
+    mainCompilationProcess = new QProcess(this);
 
     initMainButtons();
     initMenuButtons();
@@ -189,56 +190,50 @@ void MainWindow::initToolBarButtons() {
 void MainWindow::initEventConnectors() {
     // If text changed
     connect(ui->plainTextEdit, &QPlainTextEdit::textChanged, this, [this]() { isTextChanged = 1; });
+
+    connect(mainCompilationProcess, &QProcess::finished, this, &MainWindow::onProgramFinished);
+    connect(mainCompilationProcess, &QProcess::errorOccurred, this, &MainWindow::onProgramErrorOccurred);
+    connect(mainCompilationProcess, &QProcess::readyReadStandardOutput, this, &MainWindow::onProgramStandardOutput);
+    connect(mainCompilationProcess, &QProcess::readyReadStandardError, this, &MainWindow::onProgramStandardError);
 }
 
-<<<<<<< HEAD
-bool MainWindow::onCompileBtnClicked() {
-    ui->stopPushButton->setDisabled(false);
-
-    QString fileName = "temp.txt";
-    if(writeInFile(fileName, ui->plainTextEdit->toPlainText())){
-        return false;
-    };
-    QString output;
-    QString error;
-    if(runProgram(fileName, output, error)){
-        return false;
-    };
-    ui->outputWindow->setPlainText(error + "/n" + output);
-    return true;
-}
-
-bool MainWindow::onStopBtnClicked() {
-    ui->stopPushButton->setDisabled(true);
-    return true;
-=======
-//
-// message = "Hello, World!"
-// print(message)
-
-int MainWindow::onCompileBtnClicked() {
+void MainWindow::onCompileBtnClicked() {
 
     if(selectedLanguage != _langStringToEnum.value("Python")){
         ui->statusBar->showMessage("Error: Compilation is set just for Python", 3000);
-        return 1;
+        return;
     }
 
-    if(isCompiling) return 0;
+    QString res;
+    if(!isPythonAvailable(&res)){
+        ui->statusBar->showMessage("Error: user has no python installed", 3000);
+        return;
+    }
 
-    ui->stopPushButton->setDisabled(false);
+    ui->stopPushButton->setEnabled(true);
 
     QString fileName = "temp.txt";
-    if(writeInFile(fileName, ui->plainTextEdit->toPlainText())) return 1;
+    if(writeInFile(fileName, ui->plainTextEdit->toPlainText())){
+        ui->statusBar->showMessage("Error: write in file with fileName " + fileName + " gets error", 3000);
+        return;
+    }
 
-    if(runProgram(fileName)) return 1;
+    if(runProgram(fileName)){
+        ui->statusBar->showMessage("Error: programm with fileName " + fileName + " gets error", 3000);
+        return;
+    }
 
-    return 0;
+
+    ui->compilePushButton->setEnabled(false);
+    ui->stopPushButton->setEnabled(true);
+
+    return;
 }
 
-int MainWindow::onStopBtnClicked() {
-    ui->stopPushButton->setDisabled(true);
-    return 0;
->>>>>>> 72c826d (feat(compilation): add compile stop btns, add compilation for python files)
+void MainWindow::onStopBtnClicked() {
+    ui->stopPushButton->setEnabled(false);
+    stopProgram();
+    return;
 }
 
 int MainWindow::writeInFile(QStringView filePath, QStringView info) {
@@ -260,71 +255,106 @@ int MainWindow::writeInFile(QStringView filePath, QStringView info) {
 
 }
 
-<<<<<<< HEAD
-// int MainWindow::loadTxtFile(QStringView filePath, QString &text) {
-
-//     QFile file(filePath.toString());
-//     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)){
-//         qDebug() << "Open "+filePath+" Filed!";
-//         return;
-//     }
-
-//     QTextStream in(&file);
-//     text = in.readLine();
-//     while (!text.isNull()) {
-//         text = in.readLine();
-//     }
-//     return 0;
-// }
-
-int MainWindow::runProgram(QStringView filePath, QString &output, QString &error) {
-
-    QProcess proc;
-    proc.start("python", QStringList() << filePath.toString());
-
-    if(!proc.waitForStarted()){
-=======
 int MainWindow::runProgram(QStringView filePath) {
+
+    if (mainCompilationProcess && mainCompilationProcess->state() != QProcess::NotRunning) {
+        ui->statusBar->showMessage("Error: Script is already running", 3000);
+        return 1;
+    }
+
+    if (!mainCompilationProcess) {
+        mainCompilationProcess = new QProcess(this);
+    }
 
     mainCompilationProcess->start("python", QStringList() << filePath.toString());
 
     if(!mainCompilationProcess->waitForStarted()){
->>>>>>> 72c826d (feat(compilation): add compile stop btns, add compilation for python files)
         ui->statusBar->showMessage("Error: Python is not installed or filepath: " + filePath + " is not found", 3000);
         return 1;
     }
-
-<<<<<<< HEAD
-    proc.waitForFinished(3000);
-
-    output = proc.readAllStandardOutput();
-    error = proc.readAllStandardError();
-=======
-    connect(mainCompilationProcess, &QProcess::finished, this, &MainWindow::onProgramFinished);
->>>>>>> 72c826d (feat(compilation): add compile stop btns, add compilation for python files)
     return 0;
 }
 
 int MainWindow::stopProgram() {
+    if (!mainCompilationProcess || mainCompilationProcess->state() == QProcess::NotRunning)
+        return 1;
 
-<<<<<<< HEAD
+    mainCompilationProcess->terminate();
 
-=======
->>>>>>> 72c826d (feat(compilation): add compile stop btns, add compilation for python files)
-    QProcess proc;
-    //proc.start("python", QStringList() << filePath());
+    if (!mainCompilationProcess->waitForFinished(1000))
+        mainCompilationProcess->kill();
+
     return 0;
 }
 
-<<<<<<< HEAD
-=======
-int MainWindow::onProgramFinished() {
-    ui->outputWindow->setPlainText(mainCompilationProcess->readAllStandardOutput() + "/n" + mainCompilationProcess->readAllStandardError());
-    return 0;
+void MainWindow::onProgramFinished(int code, QProcess::ExitStatus st) {
+
+    ui->compilePushButton->setEnabled(true);
+    ui->stopPushButton->setEnabled(false);
+    if (st == QProcess::CrashExit)
+        ui->statusBar->showMessage("Process was killed", 3000);
+    else if (code != 0)
+        ui->statusBar->showMessage("Finished with exit code " + QString::number(code), 3000);
+    else
+        ui->statusBar->showMessage("Finished OK", 3000);
+
+    return;
 }
 
 
->>>>>>> 72c826d (feat(compilation): add compile stop btns, add compilation for python files)
+void MainWindow::onProgramErrorOccurred(QProcess::ProcessError e) {
+
+    if (e == QProcess::FailedToStart){
+        ui->statusBar->showMessage("Interpreter not found or not executable", 3000);
+    }
+    return;
+}
+
+void MainWindow::onProgramStandardError() {
+    ui->outputWindow->appendPlainText(QString::fromUtf8(mainCompilationProcess->readAllStandardError()));
+    return;
+}
+
+void MainWindow::onProgramStandardOutput() {
+    ui->outputWindow->appendPlainText(QString::fromUtf8(mainCompilationProcess->readAllStandardOutput()));
+    return;
+}
+
+
+QString MainWindow::findPythonInterpreter() const
+{
+    const QStringList candidates = { QStringLiteral("python3"),
+                                    QStringLiteral("python"),
+                                    QStringLiteral("py") };
+    for (const QString &name : candidates) {
+        const QString path = QStandardPaths::findExecutable(name);
+        if (!path.isEmpty())
+            return path;
+    }
+    return QString();   // интерпретатор не найден
+}
+
+bool MainWindow::isPythonAvailable(QString *versionOut)
+{
+    const QString python = findPythonInterpreter();
+    if (python.isEmpty())
+        return false;
+
+    QProcess probe;
+    probe.start(python, { QStringLiteral("--version") });
+
+    if (!probe.waitForFinished(3000)) {
+        probe.kill();
+        probe.waitForFinished(1000);
+        return false;
+    }
+    if (probe.exitStatus() != QProcess::NormalExit || probe.exitCode() != 0)
+        return false;
+
+    if (versionOut)
+        *versionOut = QString::fromUtf8(probe.readAllStandardOutput()).trimmed();
+    return true;
+}
 
 
 void MainWindow::closeEvent(QCloseEvent* event) {
